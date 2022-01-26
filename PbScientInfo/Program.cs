@@ -6,7 +6,7 @@ namespace PbScientInfo
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            BitMap24Image image = new BitMap24Image(@"test_items\RGBsquares.bmp");
         }
     }
 }
