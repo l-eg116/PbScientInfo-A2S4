@@ -13,9 +13,9 @@ namespace PbScientInfo
         private int body_offset;
         private int info_size;
         private int width;
-        private int height;
+        private int heigth;
         private RGBPixel[,] pixels;
-        
+
         public string Type
         {
             get { return this.type; }
@@ -45,44 +45,86 @@ namespace PbScientInfo
             get { return this.pixels; }
         }
 
+        public byte[] Bytes
+        {
+            get
+            {
+                byte[] bytes = new byte[14 + this.info_size + this.heigth * this.width * 3];
+
+                /* [HEADER] */
+                bytes[0] = Convert.ToByte(this.type[0]);
+                bytes[1] = Convert.ToByte(this.type[1]);
+                
+                for(int i = 0; i < 4; i++)
+                    bytes[2 + i] = ToEndian(this.size, 4)[i];
+
+                for(int i = 0; i < 4; i++)
+                    bytes[6 + i] = Convert.ToByte(new char[] { 'E', 'G', 'A', 'T' }[i]);
+                
+                for(int i = 0; i < 4; i++)
+                    bytes[10 + i] = ToEndian(this.body_offset, 4)[i];
+
+                /* [HEADER INFO] */
+                for(int i = 0; i < 4; i++)
+                    bytes[14 + i] = ToEndian(this.info_size, 4)[i];
+                
+                for(int i = 0; i < 4; i++)
+                    bytes[18 + i] = ToEndian(this.width, 4)[i];
+                
+                for(int i = 0; i < 4; i++)
+                    bytes[22 + i] = ToEndian(this.heigth, 4)[i];
+
+                /* [BODY] */
+                int n = this.body_offset;
+                foreach(RGBPixel pixel in this.pixels)
+                {
+                    (bytes[n + 0], bytes[n + 1], bytes[n + 2]) = pixel.RGB;
+                    n += 3;
+                }
+
+                return bytes;
+            }
+        }
+
         public BitMap24Image(string path)
         {
-            this.bytes = File.ReadAllBytes(path);
+            byte[] bytes = File.ReadAllBytes(path);
 
             /* [HEADER] */
             this.type = ""; // 0x00 to 0x01
-            this.type += Convert.ToChar(this.bytes[0]);
-            this.type += Convert.ToChar(this.bytes[1]);
+            this.type += Convert.ToChar(bytes[0]);
+            this.type += Convert.ToChar(bytes[1]);
 
             this.size = 0; // 0x02 to 0x05
             for(int i = 0; i < 4; i++)
-                this.size += this.bytes[2 + i] * (i != 0 ? 256 ^ i : 1);
+                this.size += bytes[2 + i] * (int)Math.Pow(256, i);
 
             //bytes 0x06 to 0x09 reserved for editing app
 
             this.body_offset = 0; // 0x0A to 0x0D
             for(int i = 0; i < 4; i++)
-                this.body_offset += this.bytes[10 + i] * (i != 0 ? 256 ^ i : 1);
+                this.body_offset += bytes[10 + i] * (int)Math.Pow(256, i);
 
             /* [HEADER INFO] */
             this.info_size = 0; // 0x0E to 0x11
             for(int i = 0; i < 4; i++)
-                this.info_size += this.bytes[14 + i] * (i != 0 ? 256 ^ i : 1);
-            
+                this.info_size += bytes[14 + i] * (int)Math.Pow(256, i);
+
             this.width = 0; // 0x12 to 0x15
             for(int i = 0; i < 4; i++)
-                this.width += this.bytes[18 + i] * (i != 0 ? 256 ^ i : 1);
-            
-            this.height = 0; // 0x16 to 0x19
-            for(int i = 0; i < 4; i++)
-                this.height += this.bytes[22 + i] * (i != 0 ? 256 ^ i : 1);
+                this.width += bytes[18 + i] * (int)Math.Pow(256, i);
 
-            this.pixels = new RGBPixel[this.height, this.width];
+            this.heigth = 0; // 0x16 to 0x19
+            for(int i = 0; i < 4; i++)
+                this.heigth += bytes[22 + i] * (int)Math.Pow(256, i);
+
+            /* [BODY] */
+            this.pixels = new RGBPixel[this.heigth, this.width];
             int n = this.body_offset;
-            for(int x = 0; x < this.height; x++)
+            for(int x = 0; x < this.heigth; x++)
                 for(int y = 0; y < this.width; y++)
                 {
-                    this.pixels[x,y] = new RGBPixel(this.bytes[n], this.bytes[n+1], this.bytes[n+2]);
+                    this.pixels[x, y] = new RGBPixel(bytes[n], bytes[n + 1], bytes[n + 2]);
                     n += 3;
                 }
         }
@@ -92,7 +134,7 @@ namespace PbScientInfo
             return $"<BitMap24Image>\n"
                 + $"type = {this.type}, size = {this.size} bytes\n"
                 + $"header info size = 0x{this.info_size:X}, body offset = 0x{this.body_offset:X}\n"
-                + $"heigth = {this.height}, width = {this.width}\n"
+                + $"heigth = {this.heigth}, width = {this.width}\n"
                 + $"pixels = \n{this.PixelsToString()}";
         }
         public string PixelsToString()
@@ -104,6 +146,20 @@ namespace PbScientInfo
                 output += pixel.ToString() + (n++ % this.width == 0 ? "\n" : "|");
 
             return output;
+        }
+
+        private static byte[] ToEndian(int value, int size = 0)
+        {
+            if(size < 1) for(size = 1; value >= (int)Math.Pow(256, size); size++) ;
+            byte[] bytes = new byte[size];
+
+            for(int i = size - 1; i >= 0; i--)
+            {
+                value %= (int)Math.Pow(256, i + 1);
+                bytes[i] = (byte)(value / (int)Math.Pow(256, i));
+            }
+
+            return bytes;
         }
     }
 }

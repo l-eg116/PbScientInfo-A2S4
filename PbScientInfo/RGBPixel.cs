@@ -25,6 +25,10 @@ namespace PbScientInfo
             get { return this.b; }
             set { this.b = value; }
         }
+        public (byte, byte, byte) RGB
+        {
+            get { return (this.r, this.g, this.b); }
+        }
         
         public RGBPixel()
         {
