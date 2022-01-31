@@ -15,6 +15,35 @@ namespace PbScientInfo
         private int width;
         private int height;
         private RGBPixel[,] pixels;
+        
+        public string Type
+        {
+            get { return this.type; }
+        }
+        public int Size
+        {
+            get { return this.size; }
+        }
+        public int BodyOffset
+        {
+            get { return this.body_offset; }
+        }
+        public int InfoSize
+        {
+            get { return this.info_size; }
+        }
+        public int Width
+        {
+            get { return this.width; }
+        }
+        public int Heigth
+        {
+            get { return this.Heigth; }
+        }
+        public RGBPixel[,] Pixels
+        {
+            get { return this.pixels; }
+        }
 
         public BitMap24Image(string path)
         {
@@ -75,7 +104,6 @@ namespace PbScientInfo
                 output += pixel.ToString() + (n++ % this.width == 0 ? "\n" : "|");
 
             return output;
-            
         }
     }
 }
