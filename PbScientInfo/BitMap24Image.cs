@@ -14,7 +14,7 @@ namespace PbScientInfo
         private int info_size;
         private int width;
         private int height;
-        private (int, int, int)[] pixels;
+        private RGBPixel[,] pixels;
 
         public BitMap24Image(string path)
         {
@@ -47,8 +47,35 @@ namespace PbScientInfo
             this.height = 0; // 0x16 to 0x19
             for(int i = 0; i < 4; i++)
                 this.height += this.bytes[22 + i] * (i != 0 ? 256 ^ i : 1);
+
+            this.pixels = new RGBPixel[this.height, this.width];
+            int n = this.body_offset;
+            for(int x = 0; x < this.height; x++)
+                for(int y = 0; y < this.width; y++)
+                {
+                    this.pixels[x,y] = new RGBPixel(this.bytes[n], this.bytes[n+1], this.bytes[n+2]);
+                    n += 3;
+                }
+        }
+
+        public override string ToString()
+        {
+            return $"<BitMap24Image>\n"
+                + $"type = {this.type}, size = {this.size} bytes\n"
+                + $"header info size = 0x{this.info_size:X}, body offset = 0x{this.body_offset:X}\n"
+                + $"heigth = {this.height}, width = {this.width}\n"
+                + $"pixels = \n{this.PixelsToString()}";
+        }
+        public string PixelsToString()
+        {
+            string output = "";
+
+            int n = 1;
+            foreach(RGBPixel pixel in this.pixels)
+                output += pixel.ToString() + (n++ % this.width == 0 ? "\n" : "|");
+
+            return output;
             
-            // TODO : read pixels
         }
     }
 }
