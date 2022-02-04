@@ -7,7 +7,6 @@ namespace PbScientInfo
 {
     class BitMap24Image
     {
-        private byte[] bytes;
         private string type;
         private int size;
         private int body_offset;
@@ -74,6 +73,9 @@ namespace PbScientInfo
                 for(int i = 0; i < 4; i++)
                     bytes[22 + i] = ToEndian(this.heigth, 4)[i];
 
+                for(int i = 0x1A; i < 0x36; i++)
+                    bytes[i] = new byte[] { 0x01, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC4, 0x0E, 0x00, 0x00, 0xC4, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }[i - 0x1A];
+
                 /* [BODY] */
                 int n = this.body_offset;
                 foreach(BGRPixel pixel in this.pixels)
@@ -127,6 +129,10 @@ namespace PbScientInfo
                     this.pixels[x, y] = new BGRPixel(bytes[n], bytes[n + 1], bytes[n + 2]);
                     n += 3;
                 }
+        }
+        public void SaveTo(string path)
+        {
+            File.WriteAllBytes(path, this.Bytes);
         }
 
         public override string ToString()
