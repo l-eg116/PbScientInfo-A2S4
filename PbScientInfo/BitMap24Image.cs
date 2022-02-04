@@ -87,7 +87,28 @@ namespace PbScientInfo
                 return bytes;
             }
         }
+        public BitMap24Image Copy
+        {
+            get
+            {
+                BitMap24Image copy = new BitMap24Image();
+                
+                copy.type = this.type;
+                copy.size = this.size;
+                copy.body_offset = this.body_offset;
+                copy.info_size = this.info_size;
+                copy.width = this.width;
+                copy.heigth = this.heigth;
+                copy.pixels = this.pixels;
 
+                return copy;
+            }
+        }
+
+        private BitMap24Image()
+        {
+
+        }
         public BitMap24Image(string path)
         {
             byte[] bytes = File.ReadAllBytes(path);
