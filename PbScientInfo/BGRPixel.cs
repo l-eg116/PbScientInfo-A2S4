@@ -4,7 +4,7 @@ using System.Text;
 
 namespace PbScientInfo
 {
-    class RGBPixel
+    class BGRPixel
     {
         private byte r;
         private byte g;
@@ -25,24 +25,24 @@ namespace PbScientInfo
             get { return this.b; }
             set { this.b = value; }
         }
-        public (byte, byte, byte) RGB
+        public (byte, byte, byte) BGR
         {
-            get { return (this.r, this.g, this.b); }
+            get { return (this.b, this.g, this.r); }
         }
         
-        public RGBPixel()
+        public BGRPixel()
         {
-            (this.r, this.g, this.b) = (0, 0, 0);
+            (this.b, this.g, this.r) = (0, 0, 0);
         }
-        public RGBPixel((byte, byte, byte) rgb)
+        public BGRPixel((byte, byte, byte) bgr)
         {
-            (this.r, this.g, this.b) = rgb;
+            (this.b, this.g, this.r) = bgr;
         }
-        public RGBPixel(byte r, byte g, byte b)
+        public BGRPixel(byte b, byte g, byte r)
         {
-            this.r = r;
-            this.g = g;
             this.b = b;
+            this.g = g;
+            this.r = r;
         }
 
         public override string ToString()
@@ -51,11 +51,11 @@ namespace PbScientInfo
         }
         public string ToHexString()
         {
-            return $"{this.r:X2} {this.g:X2} {this.b:X2}";
+            return $"{this.b:X2} {this.g:X2} {this.r:X2}";
         }
         public string ToDecString()
         {
-            return $"{this.r:D3} {this.g:D3} {this.b:D3}";
+            return $"{this.b:D3} {this.g:D3} {this.r:D3}";
         }
     }
 }

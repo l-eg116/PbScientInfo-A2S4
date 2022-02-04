@@ -14,7 +14,7 @@ namespace PbScientInfo
         private int info_size;
         private int width;
         private int heigth;
-        private RGBPixel[,] pixels;
+        private BGRPixel[,] pixels;
 
         public string Type
         {
@@ -40,7 +40,7 @@ namespace PbScientInfo
         {
             get { return this.Heigth; }
         }
-        public RGBPixel[,] Pixels
+        public BGRPixel[,] Pixels
         {
             get { return this.pixels; }
         }
@@ -76,9 +76,9 @@ namespace PbScientInfo
 
                 /* [BODY] */
                 int n = this.body_offset;
-                foreach(RGBPixel pixel in this.pixels)
+                foreach(BGRPixel pixel in this.pixels)
                 {
-                    (bytes[n + 0], bytes[n + 1], bytes[n + 2]) = pixel.RGB;
+                    (bytes[n + 0], bytes[n + 1], bytes[n + 2]) = pixel.BGR;
                     n += 3;
                 }
 
@@ -119,12 +119,12 @@ namespace PbScientInfo
                 this.heigth += bytes[22 + i] * (int)Math.Pow(256, i);
 
             /* [BODY] */
-            this.pixels = new RGBPixel[this.heigth, this.width];
+            this.pixels = new BGRPixel[this.heigth, this.width];
             int n = this.body_offset;
             for(int x = 0; x < this.heigth; x++)
                 for(int y = 0; y < this.width; y++)
                 {
-                    this.pixels[x, y] = new RGBPixel(bytes[n], bytes[n + 1], bytes[n + 2]);
+                    this.pixels[x, y] = new BGRPixel(bytes[n], bytes[n + 1], bytes[n + 2]);
                     n += 3;
                 }
         }
@@ -142,7 +142,7 @@ namespace PbScientInfo
             string output = "";
 
             int n = 1;
-            foreach(RGBPixel pixel in this.pixels)
+            foreach(BGRPixel pixel in this.pixels)
                 output += pixel.ToString() + (n++ % this.width == 0 ? "\n" : "|");
 
             return output;
