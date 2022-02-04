@@ -170,9 +170,28 @@ namespace PbScientInfo
 
             int n = 1;
             foreach(BGRPixel pixel in this.pixels)
-                output += pixel.ToString() + (n++ % this.width == 0 ? "\n" : "|");
+                output += (pixel != null? pixel.ToString() : " [NULL] ") + (n++ % this.width == 0 ? "\n" : "|");
 
             return output;
+        }
+        
+        public void RotateCW()
+        {
+            BGRPixel[,] copy = this.pixels;
+            (this.heigth, this.width) = (this.width, this.heigth);
+            this.pixels = new BGRPixel[this.heigth, this.width];
+            for(int x = 0; x < this.heigth; x++)
+                for(int y = 0; y < this.width; y++)
+                    this.pixels[x, y] = copy[this.width - y - 1, x];
+        }
+        public void RotateCCW()
+        {
+            BGRPixel[,] copy = this.pixels;
+            (this.heigth, this.width) = (this.width, this.heigth);
+            this.pixels = new BGRPixel[this.heigth, this.width];
+            for(int x = 0; x < this.heigth; x++)
+                for(int y = 0; y < this.width; y++)
+                    this.pixels[x, y] = copy[y, this.heigth - x - 1];
         }
 
         private static byte[] ToEndian(int value, int size = 0)
