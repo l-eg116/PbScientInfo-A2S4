@@ -8,7 +8,6 @@ namespace PbScientInfo
     class BitMap24Image
     {
         private string type;
-        private int size;
         private int body_offset;
         private int info_size;
         private int width;
@@ -21,7 +20,7 @@ namespace PbScientInfo
         }
         public int Size
         {
-            get { return this.size; }
+            get { return 14 + this.info_size + this.heigth * this.width * 3; }
         }
         public int BodyOffset
         {
@@ -55,7 +54,7 @@ namespace PbScientInfo
                 bytes[1] = Convert.ToByte(this.type[1]);
                 
                 for(int i = 0; i < 4; i++)
-                    bytes[2 + i] = ToEndian(this.size, 4)[i];
+                    bytes[2 + i] = ToEndian(this.Size, 4)[i];
 
                 for(int i = 0; i < 4; i++)
                     bytes[6 + i] = Convert.ToByte(new char[] { 'E', 'G', 'A', 'T' }[i]);
@@ -118,9 +117,7 @@ namespace PbScientInfo
             this.type += Convert.ToChar(bytes[0]);
             this.type += Convert.ToChar(bytes[1]);
 
-            this.size = 0; // 0x02 to 0x05
-            for(int i = 0; i < 4; i++)
-                this.size += bytes[2 + i] * (int)Math.Pow(256, i);
+            //bytes 0x02 to 0x05 for size, ignoried
 
             //bytes 0x06 to 0x09 reserved for editing app
 
@@ -159,7 +156,7 @@ namespace PbScientInfo
         public override string ToString()
         {
             return $"<BitMap24Image>\n"
-                + $"type = {this.type}, size = {this.size} bytes\n"
+                + $"type = {this.type}, size = {this.Size} bytes\n"
                 + $"header info size = 0x{this.info_size:X}, body offset = 0x{this.body_offset:X}\n"
                 + $"heigth = {this.heigth}, width = {this.width}\n"
                 + $"pixels = \n{this.PixelsToString()}";
