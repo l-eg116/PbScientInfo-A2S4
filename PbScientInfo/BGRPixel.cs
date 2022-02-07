@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PbScientInfo
+﻿namespace PbScientInfo
 {
     class BGRPixel
     {
         private byte r;
         private byte g;
         private byte b;
-        
+
         public byte R
         {
             get { return this.r; }
@@ -29,7 +25,14 @@ namespace PbScientInfo
         {
             get { return (this.b, this.g, this.r); }
         }
-        
+        public BGRPixel Copy
+        {
+            get
+            {
+                return new BGRPixel(this.BGR);
+            }
+        }
+
         public BGRPixel()
         {
             (this.b, this.g, this.r) = (0, 0, 0);
