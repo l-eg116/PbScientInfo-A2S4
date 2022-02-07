@@ -171,6 +171,23 @@ namespace PbScientInfo
 
             return output;
         }
+        public string BytesToString()
+        {
+            string output = "";
+            byte[] bytes = this.Bytes;
+
+            output += "[HEADER]\n";
+            for(int i = 0x00; i < 0x0E; i++)
+                output += $"{bytes[i]:X2} ";
+            output += "\n[ INFO ]\n";
+            for(int i = 0x0E; i < 0x36; i++)
+                output += $"{bytes[i]:X2} ";
+            output += "\n[ BODY ]\n";
+            for(int i = 0x36; i < bytes.Length; i++)
+                output += $"{bytes[i]:X2}{(/*(i - 0x36) / 3 + 1 % this.width == 0 ? "\n" : */(i - 0x36 + 1) % 3 == 0 ? "|" : " ")}";
+
+            return output;
+        }
         
         public void RotateCW()
         {
@@ -203,6 +220,30 @@ namespace PbScientInfo
             }
 
             return bytes;
+        }
+        private static int FromEndian(byte[] bytes)
+        {
+            int output = 0;
+            for(int i = 0; i < bytes.Length; i++)
+                output += bytes[i] * (int)Math.Pow(256, i);
+            return output;
+        }
+        public static string BytesToString(string path)
+        {
+            string output = "";
+            byte[] bytes = File.ReadAllBytes(path);
+
+            output += "[HEADER]\n";
+            for(int i = 0x00; i < 0x0E; i++)
+                output += $"{bytes[i]:X2} ";
+            output += "\n[ INFO ]\n";
+            for(int i = 0x0E; i < 0x36; i++)
+                output += $"{bytes[i]:X2} ";
+            output += "\n[ BODY ]\n";
+            for(int i = 0x36; i < bytes.Length; i++)
+                output += $"{bytes[i]:X2}{((i - 0x36 + 1) % 3 == 0 ? "|" : " ")}";
+
+            return output;
         }
     }
 }
