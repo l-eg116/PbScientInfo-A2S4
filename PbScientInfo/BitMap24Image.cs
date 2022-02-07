@@ -205,6 +205,12 @@ namespace PbScientInfo
                 for(int y = 0; y < this.width; y++)
                     this.pixels[x, y] = copy[y, this.heigth - x - 1];
         }
+        public void Grayify()
+        {
+            for(int x = 0; x < this.heigth; x++)
+                for(int y = 0; y < this.width; y++)
+                    this.pixels[x, y].Grayify();
+        }
 
         private static byte[] ToEndian(int value, int size = 0)
         {

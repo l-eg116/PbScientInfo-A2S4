@@ -60,5 +60,11 @@
         {
             return $"{this.b:D3} {this.g:D3} {this.r:D3}";
         }
+
+        public void Grayify()
+        {
+            int med = (this.r + this.g + this.b) / 3;
+            (this.r, this.g, this.b) = ((byte)med, (byte)med, (byte)med);
+        }
     }
 }
