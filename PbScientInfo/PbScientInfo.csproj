@@ -12,10 +12,13 @@
     <None Update="test_items\B&amp;Wsquares.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="test_items\Test2.bmp">
+    <None Update="test_items\Test1.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="test_items\Test1.bmp">
+    <None Update="test_items\Test2_out.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="test_items\Test2.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace PbScientInfo
 {
@@ -52,23 +50,23 @@ namespace PbScientInfo
                 /* [HEADER] */
                 bytes[0] = Convert.ToByte(this.type[0]);
                 bytes[1] = Convert.ToByte(this.type[1]);
-                
+
                 for(int i = 0; i < 4; i++)
                     bytes[2 + i] = ToEndian(this.Size, 4)[i];
 
                 for(int i = 0; i < 4; i++)
                     bytes[6 + i] = Convert.ToByte(new char[] { 'E', 'G', 'A', 'T' }[i]);
-                
+
                 for(int i = 0; i < 4; i++)
                     bytes[10 + i] = ToEndian(this.body_offset, 4)[i];
 
                 /* [HEADER INFO] */
                 for(int i = 0; i < 4; i++)
                     bytes[14 + i] = ToEndian(this.info_size, 4)[i];
-                
+
                 for(int i = 0; i < 4; i++)
                     bytes[18 + i] = ToEndian(this.width, 4)[i];
-                
+
                 for(int i = 0; i < 4; i++)
                     bytes[22 + i] = ToEndian(this.heigth, 4)[i];
 
@@ -77,11 +75,12 @@ namespace PbScientInfo
 
                 /* [BODY] */
                 int n = this.body_offset;
-                foreach(BGRPixel pixel in this.pixels)
-                {
-                    (bytes[n + 0], bytes[n + 1], bytes[n + 2]) = pixel.BGR;
-                    n += 3;
-                }
+                for(int x = 0; x < this.heigth; x++)
+                    for(int y = 0; y < this.width; y++)
+                    {
+                        (bytes[n + 0], bytes[n + 1], bytes[n + 2]) = this.pixels[x, y].BGR;
+                        n += 3;
+                    }
 
                 return bytes;
             }
@@ -91,9 +90,8 @@ namespace PbScientInfo
             get
             {
                 BitMap24Image copy = new BitMap24Image();
-                
+
                 copy.type = this.type;
-                copy.size = this.size;
                 copy.body_offset = this.body_offset;
                 copy.info_size = this.info_size;
                 copy.width = this.width;
@@ -167,7 +165,7 @@ namespace PbScientInfo
 
             int n = 1;
             foreach(BGRPixel pixel in this.pixels)
-                output += (pixel != null? pixel.ToString() : " [NULL] ") + (n++ % this.width == 0 ? "\n" : "|");
+                output += (pixel != null ? pixel.ToString() : " [NULL] ") + (n++ % this.width == 0 ? "\n" : "|");
 
             return output;
         }
@@ -188,7 +186,7 @@ namespace PbScientInfo
 
             return output;
         }
-        
+
         public void RotateCW()
         {
             BGRPixel[,] copy = this.pixels;
