@@ -72,5 +72,26 @@
             this.g = (byte)(255 - this.g);
             this.b = (byte)(255 - this.b);
         }
+        public void Merge(BGRPixel pixel)
+        {
+            this.r = (byte)((this.r + pixel.r) / 2);
+            this.g = (byte)((this.g + pixel.g) / 2);
+            this.b = (byte)((this.b + pixel.b) / 2);
+        }
+        public static BGRPixel Fuse(BGRPixel[] pixels)
+        {
+            int r = 0;
+            int g = 0;
+            int b = 0;
+
+            foreach(BGRPixel pixel in pixels)
+            {
+                r += pixel.r;
+                g += pixel.g;
+                b += pixel.b;
+            }
+
+            return new BGRPixel((byte)(b / pixels.Length), (byte)(r / pixels.Length), (byte)(g / pixels.Length));
+        }
     }
 }
