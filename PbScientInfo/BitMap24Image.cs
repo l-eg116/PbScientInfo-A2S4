@@ -217,6 +217,12 @@ namespace PbScientInfo
                 for(int y = 0; y < this.width; y++)
                     (this.pixels[x, y], this.pixels[this.heigth - x - 1, y]) = (this.pixels[this.heigth - x - 1, y], this.pixels[x, y]);
         }
+        public void FlipHorizontal()
+        {
+            for(int x = 0; x < this.heigth; x++)
+                for(int y = 0; y < this.width / 2; y++)
+                    (this.pixels[x, y], this.pixels[x, this.width - y - 1]) = (this.pixels[x, this.width - y - 1], this.pixels[x, y]);
+        }
         public void Grayify()
         {
             for(int x = 0; x < this.heigth; x++)
