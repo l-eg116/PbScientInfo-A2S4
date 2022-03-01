@@ -205,6 +205,12 @@ namespace PbScientInfo
                 for(int y = 0; y < this.width; y++)
                     this.pixels[x, y] = copy[y, this.heigth - x - 1];
         }
+        public void FlipVertical()
+        {
+            for(int x = 0; x < this.heigth / 2; x++)
+                for(int y = 0; y < this.width; y++)
+                    (this.pixels[x, y], this.pixels[this.heigth - x - 1, y]) = (this.pixels[this.heigth - x - 1, y], this.pixels[x, y]);
+        }
         public void Grayify()
         {
             for(int x = 0; x < this.heigth; x++)
