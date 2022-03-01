@@ -66,5 +66,11 @@
             int med = (this.r + this.g + this.b) / 3;
             (this.r, this.g, this.b) = ((byte)med, (byte)med, (byte)med);
         }
+        public void Invert()
+        {
+            this.r = (byte)(255 - this.r);
+            this.g = (byte)(255 - this.g);
+            this.b = (byte)(255 - this.b);
+        }
     }
 }
