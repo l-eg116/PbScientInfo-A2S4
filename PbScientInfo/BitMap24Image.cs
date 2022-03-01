@@ -18,7 +18,7 @@ namespace PbScientInfo
         }
         public int Size
         {
-            get { return 14 + this.info_size + this.heigth * this.width * 3; }
+            get { return 14 + this.info_size + this.heigth * this.width * 3 + this.heigth * ((this.width * 3) % 4 == 0 ? 0 : 4 - (this.width * 3) % 4); }
         }
         public int BodyOffset
         {
@@ -45,7 +45,7 @@ namespace PbScientInfo
         {
             get
             {
-                byte[] bytes = new byte[14 + this.info_size + this.heigth * this.width * 3];
+                byte[] bytes = new byte[this.Size];
 
                 /* [HEADER] */
                 bytes[0] = Convert.ToByte(this.type[0]);
@@ -76,11 +76,14 @@ namespace PbScientInfo
                 /* [BODY] */
                 int n = this.body_offset;
                 for(int x = 0; x < this.heigth; x++)
+                {
                     for(int y = 0; y < this.width; y++)
                     {
                         (bytes[n + 0], bytes[n + 1], bytes[n + 2]) = this.pixels[x, y].BGR;
                         n += 3;
                     }
+                    n += ((n - this.body_offset) % 4 == 0 ? 0 : 4 - (n - this.body_offset) % 4);
+                }
 
                 return bytes;
             }
@@ -140,11 +143,14 @@ namespace PbScientInfo
             this.pixels = new BGRPixel[this.heigth, this.width];
             int n = this.body_offset;
             for(int x = 0; x < this.heigth; x++)
+            {
                 for(int y = 0; y < this.width; y++)
                 {
                     this.pixels[x, y] = new BGRPixel(bytes[n], bytes[n + 1], bytes[n + 2]);
                     n += 3;
                 }
+                n += ((n - this.body_offset) % 4 == 0 ? 0 : 4 - (n - this.body_offset) % 4);
+            }
         }
         public void SaveTo(string path)
         {
