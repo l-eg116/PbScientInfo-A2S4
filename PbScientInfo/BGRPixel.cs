@@ -76,6 +76,8 @@ namespace PbScientInfo
         }
         public void Merge(BGRPixel pixel)
         {
+            if(pixel == null) return;
+
             this.r = (byte)((this.r + pixel.r) / 2);
             this.g = (byte)((this.g + pixel.g) / 2);
             this.b = (byte)((this.b + pixel.b) / 2);
