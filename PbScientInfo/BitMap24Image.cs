@@ -8,8 +8,6 @@ namespace PbScientInfo
         private string type;
         private int body_offset;
         private int info_size;
-        private int width;
-        private int heigth;
         private BGRPixel[,] pixels;
 
         public string Type
@@ -18,7 +16,7 @@ namespace PbScientInfo
         }
         public int Size
         {
-            get { return 14 + this.info_size + this.heigth * this.width * 3 + this.heigth * ((this.width * 3) % 4 == 0 ? 0 : 4 - (this.width * 3) % 4); }
+            get { return 14 + this.info_size + this.Height * this.Width * 3 + this.Height * ((this.Width * 3) % 4 == 0 ? 0 : 4 - (this.Width * 3) % 4); }
         }
         public int BodyOffset
         {
@@ -30,11 +28,11 @@ namespace PbScientInfo
         }
         public int Width
         {
-            get { return this.width; }
+            get { return this.pixels.GetLength(1); }
         }
-        public int Heigth
+        public int Height
         {
-            get { return this.Heigth; }
+            get { return this.pixels.GetLength(0); }
         }
         public BGRPixel[,] Pixels
         {
@@ -65,19 +63,19 @@ namespace PbScientInfo
                     bytes[14 + i] = ToEndian(this.info_size, 4)[i];
 
                 for(int i = 0; i < 4; i++)
-                    bytes[18 + i] = ToEndian(this.width, 4)[i];
+                    bytes[18 + i] = ToEndian(this.Width, 4)[i];
 
                 for(int i = 0; i < 4; i++)
-                    bytes[22 + i] = ToEndian(this.heigth, 4)[i];
+                    bytes[22 + i] = ToEndian(this.Height, 4)[i];
 
                 for(int i = 0x1A; i < 0x36; i++)
                     bytes[i] = new byte[] { 0x01, 0x00, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC4, 0x0E, 0x00, 0x00, 0xC4, 0x0E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }[i - 0x1A];
 
                 /* [BODY] */
                 int n = this.body_offset;
-                for(int x = 0; x < this.heigth; x++)
+                for(int x = 0; x < this.Height; x++)
                 {
-                    for(int y = 0; y < this.width; y++)
+                    for(int y = 0; y < this.Width; y++)
                     {
                         (bytes[n + 0], bytes[n + 1], bytes[n + 2]) = this.pixels[x, y].BGR;
                         n += 3;
@@ -97,8 +95,6 @@ namespace PbScientInfo
                 copy.type = this.type;
                 copy.body_offset = this.body_offset;
                 copy.info_size = this.info_size;
-                copy.width = this.width;
-                copy.heigth = this.heigth;
                 copy.pixels = this.pixels;
 
                 return copy;
@@ -131,20 +127,20 @@ namespace PbScientInfo
             for(int i = 0; i < 4; i++)
                 this.info_size += bytes[14 + i] * (int)Math.Pow(256, i);
 
-            this.width = 0; // 0x12 to 0x15
+            int width = 0; // 0x12 to 0x15
             for(int i = 0; i < 4; i++)
-                this.width += bytes[18 + i] * (int)Math.Pow(256, i);
+                width += bytes[18 + i] * (int)Math.Pow(256, i);
 
-            this.heigth = 0; // 0x16 to 0x19
+            int height = 0; // 0x16 to 0x19
             for(int i = 0; i < 4; i++)
-                this.heigth += bytes[22 + i] * (int)Math.Pow(256, i);
+                height += bytes[22 + i] * (int)Math.Pow(256, i);
 
             /* [BODY] */
-            this.pixels = new BGRPixel[this.heigth, this.width];
+            this.pixels = new BGRPixel[height, width];
             int n = this.body_offset;
-            for(int x = 0; x < this.heigth; x++)
+            for(int x = 0; x < this.Height; x++)
             {
-                for(int y = 0; y < this.width; y++)
+                for(int y = 0; y < this.Width; y++)
                 {
                     this.pixels[x, y] = new BGRPixel(bytes[n], bytes[n + 1], bytes[n + 2]);
                     n += 3;
@@ -162,7 +158,7 @@ namespace PbScientInfo
             return $"<BitMap24Image>\n"
                 + $"type = {this.type}, size = {this.Size} bytes\n"
                 + $"header info size = 0x{this.info_size:X}, body offset = 0x{this.body_offset:X}\n"
-                + $"heigth = {this.heigth}, width = {this.width}\n"
+                + $"height = {this.Height}, width = {this.Width}\n"
                 + $"pixels = \n{this.PixelsToString()}";
         }
         public string PixelsToString()
@@ -171,7 +167,7 @@ namespace PbScientInfo
 
             int n = 1;
             foreach(BGRPixel pixel in this.pixels)
-                output += (pixel != null ? pixel.ToString() : " [NULL] ") + (n++ % this.width == 0 ? "\n" : "|");
+                output += (pixel != null ? pixel.ToString() : " [NULL] ") + (n++ % this.Width == 0 ? "\n" : "|");
 
             return output;
         }
@@ -188,7 +184,7 @@ namespace PbScientInfo
                 output += $"{bytes[i]:X2} ";
             output += "\n[ BODY ]\n";
             for(int i = 0x36; i < bytes.Length; i++)
-                output += $"{bytes[i]:X2}{(/*(i - 0x36) / 3 + 1 % this.width == 0 ? "\n" : */(i - 0x36 + 1) % 3 == 0 ? "|" : " ")}";
+                output += $"{bytes[i]:X2}{(/*(i - 0x36) / 3 + 1 % this.Width == 0 ? "\n" : */(i - 0x36 + 1) % 3 == 0 ? "|" : " ")}";
 
             return output;
         }
@@ -196,43 +192,41 @@ namespace PbScientInfo
         public void RotateCW()
         {
             BGRPixel[,] copy = this.pixels;
-            (this.heigth, this.width) = (this.width, this.heigth);
-            this.pixels = new BGRPixel[this.heigth, this.width];
-            for(int x = 0; x < this.heigth; x++)
-                for(int y = 0; y < this.width; y++)
-                    this.pixels[x, y] = copy[this.width - y - 1, x];
+            this.pixels = new BGRPixel[this.Width, this.Height];
+            for(int x = 0; x < this.Height; x++)
+                for(int y = 0; y < this.Width; y++)
+                    this.pixels[x, y] = copy[this.Width - y - 1, x];
         }
         public void RotateCCW()
         {
             BGRPixel[,] copy = this.pixels;
-            (this.heigth, this.width) = (this.width, this.heigth);
-            this.pixels = new BGRPixel[this.heigth, this.width];
-            for(int x = 0; x < this.heigth; x++)
-                for(int y = 0; y < this.width; y++)
-                    this.pixels[x, y] = copy[y, this.heigth - x - 1];
+            this.pixels = new BGRPixel[this.Width, this.Height];
+            for(int x = 0; x < this.Height; x++)
+                for(int y = 0; y < this.Width; y++)
+                    this.pixels[x, y] = copy[y, this.Height - x - 1];
         }
         public void FlipVertical()
         {
-            for(int x = 0; x < this.heigth / 2; x++)
-                for(int y = 0; y < this.width; y++)
-                    (this.pixels[x, y], this.pixels[this.heigth - x - 1, y]) = (this.pixels[this.heigth - x - 1, y], this.pixels[x, y]);
+            for(int x = 0; x < this.Height / 2; x++)
+                for(int y = 0; y < this.Width; y++)
+                    (this.pixels[x, y], this.pixels[this.Height - x - 1, y]) = (this.pixels[this.Height - x - 1, y], this.pixels[x, y]);
         }
         public void FlipHorizontal()
         {
-            for(int x = 0; x < this.heigth; x++)
-                for(int y = 0; y < this.width / 2; y++)
-                    (this.pixels[x, y], this.pixels[x, this.width - y - 1]) = (this.pixels[x, this.width - y - 1], this.pixels[x, y]);
+            for(int x = 0; x < this.Height; x++)
+                for(int y = 0; y < this.Width / 2; y++)
+                    (this.pixels[x, y], this.pixels[x, this.Width - y - 1]) = (this.pixels[x, this.Width - y - 1], this.pixels[x, y]);
         }
         public void Grayify()
         {
-            for(int x = 0; x < this.heigth; x++)
-                for(int y = 0; y < this.width; y++)
+            for(int x = 0; x < this.Height; x++)
+                for(int y = 0; y < this.Width; y++)
                     this.pixels[x, y].Grayify();
         }
         public void Invert()
         {
-            for(int x = 0; x < this.heigth; x++)
-                for(int y = 0; y < this.width; y++)
+            for(int x = 0; x < this.Height; x++)
+                for(int y = 0; y < this.Width; y++)
                     this.pixels[x, y].Invert();
         }
 
