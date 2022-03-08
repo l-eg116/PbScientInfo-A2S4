@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace PbScientInfo
@@ -228,6 +229,52 @@ namespace PbScientInfo
             for(int x = 0; x < this.Height; x++)
                 for(int y = 0; y < this.Width; y++)
                     this.pixels[x, y].Invert();
+        }
+        public void Resize(int new_height, int new_width)
+        {
+            double height_ratio = this.Height / (double)new_height;
+            double width_ratio = this.Width / (double)new_width;
+
+            BGRPixel[,] resized = new BGRPixel[new_height, this.Width];
+            for(int y = 0; y < this.Width; y++)
+                for(int x = 0; x < new_height; x++)
+                {
+                    List<(BGRPixel, double)> weighted_pixels = new List<(BGRPixel, double)>();
+                    for(int i = (int)(x * height_ratio); i < Math.Ceiling((x + 1) * height_ratio); i++)
+                    {
+                        double weight = 0;
+                        if(i >= x * height_ratio && i + 1 < (x + 1) * height_ratio) weight = 1 / height_ratio;
+                        else if(i < x * height_ratio && i + 1 >= (x + 1) * height_ratio) weight = 1;
+                        else if(i < x * height_ratio) weight = (i + 1) - x * height_ratio;
+                        else if(i + 1 >= (x + 1) * height_ratio) weight = (x + 1) * height_ratio - i;
+
+                        weighted_pixels.Add((this.pixels[i, y], weight));
+                    }
+
+                    resized[x, y] = BGRPixel.FuseWeighted(weighted_pixels);
+                }
+            this.pixels = resized;
+
+            resized = new BGRPixel[new_height, new_width];
+            for(int x = 0; x < new_height; x++)
+                for(int y = 0; y < new_width; y++)
+                {
+                    List<(BGRPixel, double)> weighted_pixels = new List<(BGRPixel, double)>();
+                    for(int i = (int)(y * width_ratio); i < Math.Ceiling((y + 1) * width_ratio); i++)
+                    {
+                        double weight = 0;
+                        if(i >= y * width_ratio && i + 1 < (y + 1) * width_ratio) weight = 1 / width_ratio;
+                        else if(i < y * width_ratio && i + 1 >= (y + 1) * width_ratio) weight = 1;
+                        else if(i < y * width_ratio) weight = (i + 1) - y * width_ratio;
+                        else if(i + 1 >= (y + 1) * width_ratio) weight = (y + 1) * width_ratio - i;
+
+                        weighted_pixels.Add((this.pixels[x, i], weight));
+                    }
+
+                    resized[x, y] = BGRPixel.FuseWeighted(weighted_pixels);
+                }
+
+            this.pixels = resized;
         }
 
         private static byte[] ToEndian(int value, int size = 0)
