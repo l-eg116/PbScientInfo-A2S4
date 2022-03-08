@@ -1,4 +1,6 @@
-﻿namespace PbScientInfo
+﻿using System.Collections.Generic;
+
+namespace PbScientInfo
 {
     class BGRPixel
     {
@@ -78,7 +80,7 @@
             this.g = (byte)((this.g + pixel.g) / 2);
             this.b = (byte)((this.b + pixel.b) / 2);
         }
-        public static BGRPixel Fuse(BGRPixel[] pixels)
+        public static BGRPixel Fuse(List<BGRPixel> pixels)
         {
             int r = 0;
             int g = 0;
@@ -91,7 +93,24 @@
                 b += pixel.b;
             }
 
-            return new BGRPixel((byte)(b / pixels.Length), (byte)(r / pixels.Length), (byte)(g / pixels.Length));
+            return new BGRPixel((byte)(b / pixels.Count), (byte)(r / pixels.Count), (byte)(g / pixels.Count));
+        }
+        public static BGRPixel FuseWeighted(List<(BGRPixel, double)> weighted_pixels)
+        {
+            double r = 0;
+            double g = 0;
+            double b = 0;
+            double total_weight = 0;
+
+            foreach((BGRPixel, double) pair in weighted_pixels)
+            {
+                r += pair.Item1.r * pair.Item2;
+                g += pair.Item1.g * pair.Item2;
+                b += pair.Item1.b * pair.Item2;
+                total_weight += pair.Item2;
+            }
+
+            return new BGRPixel((byte)(b / total_weight), (byte)(g / total_weight), (byte)(r / total_weight));
         }
     }
 }
