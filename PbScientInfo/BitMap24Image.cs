@@ -276,6 +276,42 @@ namespace PbScientInfo
 
             this.pixels = resized;
         }
+        public void Rotate(double angle, BGRPixel background_pixel = null)
+        {
+            angle *= - Math.PI / 180;
+            if(background_pixel == null) background_pixel = new BGRPixel();
+
+            int new_height = (int)Math.Ceiling(Math.Abs(Math.Sin(angle)) * this.Width + Math.Abs(Math.Cos(angle)) * this.Height);
+            int new_width = (int)Math.Ceiling(Math.Abs(Math.Sin(angle)) * this.Height + Math.Abs(Math.Cos(angle)) * this.Width);
+            BGRPixel[,] rotated = new BGRPixel[new_height, new_width];
+
+            int centerO_x = this.Height / 2;
+            int centerO_y = this.Width / 2;
+            int centerR_x = new_height / 2;
+            int centerR_y = new_width / 2;
+
+            for(int x = 0; x < this.Height; x++)
+                for(int y = 0; y < this.Width; y++)
+                    rotated[(int)Math.Round((x - centerO_x) * Math.Cos(angle) - (y - centerO_y) * Math.Sin(angle) + centerR_x),
+                        (int)Math.Round((x - centerO_x) * Math.Sin(angle) + (y - centerO_y) * Math.Cos(angle) + centerR_y)]
+                        = this.pixels[x, y];
+
+            for(int x = 0; x < new_height; x++)
+                for(int y = 0; y < new_width; y++)
+                    if(rotated[x, y] == null && (x == 0 || y == 0 || x == new_height - 1 || y == new_width - 1))
+                        rotated[x, y] = background_pixel;
+                    else if(rotated[x, y] == null && rotated[x + 1, y] != null && rotated[x - 1, y] != null &&
+                            rotated[x, y + 1] != null && rotated[x, y - 1] != null)
+                        rotated[x, y] = BGRPixel.Fuse(new List<BGRPixel>
+                            { rotated[x + 1, y], rotated[x - 1, y], rotated[x, y + 1], rotated[x, y - 1] });
+
+            for(int x = 0; x < new_height; x++)
+                for(int y = 0; y < new_width; y++)
+                    if(rotated[x, y] == null)
+                        rotated[x, y] = background_pixel;
+
+            this.pixels = rotated;
+        }
 
         private static byte[] ToEndian(int value, int size = 0)
         {
