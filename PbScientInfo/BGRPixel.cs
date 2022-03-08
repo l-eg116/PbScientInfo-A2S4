@@ -95,7 +95,7 @@ namespace PbScientInfo
                 b += pixel.b;
             }
 
-            return new BGRPixel((byte)(b / pixels.Count), (byte)(r / pixels.Count), (byte)(g / pixels.Count));
+            return new BGRPixel((byte)(b / pixels.Count), (byte)(g / pixels.Count), (byte)(r / pixels.Count));
         }
         public static BGRPixel FuseWeighted(List<(BGRPixel, double)> weighted_pixels)
         {
