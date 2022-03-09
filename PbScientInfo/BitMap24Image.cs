@@ -312,6 +312,32 @@ namespace PbScientInfo
 
             this.pixels = rotated;
         }
+        public void ApplyConvolution(double[,] matrix/*, string edge_mode = ""*/)
+        {
+            if(matrix == null || matrix.GetLength(0) != matrix.GetLength(1) || matrix.GetLength(0) % 2 == 0)
+                return;
+
+            BGRPixel[,] copy = this.pixels;
+            int matrix_radius = matrix.GetLength(0) / 2;
+
+            for(int x = 0; x < this.Height; x++)
+                for(int y = 0; y < this.Width; y++)
+                {
+                    List<(BGRPixel, double)> weighted_pixels = new List<(BGRPixel, double)>();
+                    
+                    for(int i = 0; i < matrix.GetLength(0); i++)
+                        for(int j = 0; j < matrix.GetLength(1); j++)
+                            if(x - matrix_radius + i >= 0 && x - matrix_radius + i < this.Height && y - matrix_radius + j >= 0 && y - matrix_radius + j < this.Width)
+                                weighted_pixels.Add((this.pixels[x - matrix_radius + i, y - matrix_radius + j], matrix[i, j]));
+                            else switch("")
+                                {
+                                    default:
+                                        break;
+                                }
+
+                    this.pixels[x, y] = BGRPixel.FuseWeighted(weighted_pixels);
+                }
+        }
 
         private static byte[] ToEndian(int value, int size = 0)
         {
