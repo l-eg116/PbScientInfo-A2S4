@@ -106,10 +106,19 @@ namespace PbScientInfo
 
             foreach((BGRPixel, double) pair in weighted_pixels)
             {
-                r += pair.Item1.r * pair.Item2;
-                g += pair.Item1.g * pair.Item2;
-                b += pair.Item1.b * pair.Item2;
-                total_weight += pair.Item2;
+                BGRPixel pixel = pair.Item1;
+                double weight = pair.Item2;
+
+                if(weight < 0)
+                {
+                    pixel.Invert();
+                    weight *= -1;
+                }
+
+                r += pixel.r * weight;
+                g += pixel.g * weight;
+                b += pixel.b * weight;
+                total_weight += weight;
             }
 
             return new BGRPixel((byte)(b / total_weight), (byte)(g / total_weight), (byte)(r / total_weight));
