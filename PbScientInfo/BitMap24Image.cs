@@ -312,29 +312,30 @@ namespace PbScientInfo
 
             this.pixels = rotated;
         }
-        public void ApplyConvolution(double[,] matrix/*, string edge_mode = ""*/)
+        public void ApplyConvolution(double[,] matrix, string edge_mode = "kernel_crop")
         {
             if(matrix == null || matrix.GetLength(0) != matrix.GetLength(1) || matrix.GetLength(0) % 2 == 0)
                 return;
 
-            BGRPixel[,] copy = this.pixels;
+            BGRPixel[,] copy = (BGRPixel[,])this.pixels.Clone();
             int matrix_radius = matrix.GetLength(0) / 2;
 
             for(int x = 0; x < this.Height; x++)
                 for(int y = 0; y < this.Width; y++)
                 {
                     List<(BGRPixel, double)> weighted_pixels = new List<(BGRPixel, double)>();
-                    
-                    for(int i = 0; i < matrix.GetLength(0); i++)
-                        for(int j = 0; j < matrix.GetLength(1); j++)
-                            if(x - matrix_radius + i >= 0 && x - matrix_radius + i < this.Height && y - matrix_radius + j >= 0 && y - matrix_radius + j < this.Width)
-                                weighted_pixels.Add((this.pixels[x - matrix_radius + i, y - matrix_radius + j], matrix[i, j]));
-                            else switch("")
-                                {
-                                    default:
-                                        break;
-                                }
 
+                    for(int i = 0; i < matrix_radius * 2 + 1; i++)
+                        for(int j = 0; j < matrix_radius * 2 + 1; j++)
+                            switch(edge_mode)
+                            {
+                                case "kernel_crop":
+                                default:
+                                    if(x + i - matrix_radius >= 0 && x + i - matrix_radius < this.Height &&
+                                        y + j - matrix_radius >= 0 && y + j - matrix_radius < this.Width)
+                                        weighted_pixels.Add((copy[x + i - matrix_radius, y + j - matrix_radius].Copy, matrix[i , j]));
+                                    break;
+                            }
                     this.pixels[x, y] = BGRPixel.FuseWeighted(weighted_pixels);
                 }
         }
