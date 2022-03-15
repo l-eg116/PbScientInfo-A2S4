@@ -369,6 +369,16 @@ namespace PbScientInfo
 
             this.ApplyConvolution(matrix);
         }
+        public void Emboss(uint reach = 1)
+        {
+            double[,] matrix = new double[reach * 2 + 1, reach * 2 + 1];
+
+            for(int i = 0; i < reach * 2 + 1; i++)
+                if(i - reach < 0) matrix[i, i] = -1;
+                else if(i - reach > 0) matrix[i, i] = 1;
+
+            this.ApplyConvolution(matrix);
+        }
 
         private static byte[] ToEndian(int value, int size = 0)
         {
