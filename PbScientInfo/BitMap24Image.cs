@@ -345,7 +345,7 @@ namespace PbScientInfo
         }
         public void Sharpen()
         {
-            this.ApplyConvolution(new double[3, 3] { { 0, -1, 0 }, { -1, 5, -1 }, { 0, -1, 0 } });
+            this.ApplyConvolution(new double[3, 3] { { -1, -1, -1 }, { -1, 9, -1 }, { -1, -1, -1 } });
         }
         public void BoxBlur(uint reach = 1)
         {
@@ -359,6 +359,8 @@ namespace PbScientInfo
         }
         public void GaussianBlur(uint reach = 2, double deviation = 1)
         {
+            if(deviation == 0) return;
+
             double[,] matrix = new double[reach * 2 + 1, reach * 2 + 1];
 
             for(int i = 0; i < reach * 2 + 1; i++)
