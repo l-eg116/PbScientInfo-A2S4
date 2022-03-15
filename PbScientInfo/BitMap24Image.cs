@@ -357,6 +357,16 @@ namespace PbScientInfo
 
             this.ApplyConvolution(matrix);
         }
+        public void GaussianBlur(uint reach = 2, double deviation = 1)
+        {
+            double[,] matrix = new double[reach * 2 + 1, reach * 2 + 1];
+
+            for(int i = 0; i < reach * 2 + 1; i++)
+                for(int j = 0; j < reach * 2 + 1; j++)
+                    matrix[i, j] = Math.Exp(-(Math.Pow(i - reach, 2) + Math.Pow(j - reach, 2)) / (2 * Math.Pow(deviation, 2))) / (2 * Math.PI * Math.Pow(deviation, 2));
+
+            this.ApplyConvolution(matrix);
+        }
 
         private static byte[] ToEndian(int value, int size = 0)
         {
