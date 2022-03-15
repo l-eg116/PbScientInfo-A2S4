@@ -278,7 +278,7 @@ namespace PbScientInfo
         }
         public void Rotate(double angle, BGRPixel background_pixel = null)
         {
-            angle *= - Math.PI / 180;
+            angle *= -Math.PI / 180;
             if(background_pixel == null) background_pixel = new BGRPixel();
 
             int new_height = (int)Math.Ceiling(Math.Abs(Math.Sin(angle)) * this.Width + Math.Abs(Math.Cos(angle)) * this.Height);
@@ -333,11 +333,29 @@ namespace PbScientInfo
                                 default:
                                     if(x + i - matrix_radius >= 0 && x + i - matrix_radius < this.Height &&
                                         y + j - matrix_radius >= 0 && y + j - matrix_radius < this.Width)
-                                        weighted_pixels.Add((copy[x + i - matrix_radius, y + j - matrix_radius].Copy, matrix[i , j]));
+                                        weighted_pixels.Add((copy[x + i - matrix_radius, y + j - matrix_radius].Copy, matrix[i, j]));
                                     break;
                             }
                     this.pixels[x, y] = BGRPixel.FuseWeighted(weighted_pixels);
                 }
+        }
+        public void EdgeDetection()
+        {
+            this.ApplyConvolution(new double[3, 3] { { -1, -1, -1 }, { -1, 8, -1 }, { -1, -1, -1 } });
+        }
+        public void Sharpen()
+        {
+            this.ApplyConvolution(new double[3, 3] { { 0, -1, 0 }, { -1, 5, -1 }, { 0, -1, 0 } });
+        }
+        public void BoxBlur(uint reach = 1)
+        {
+            double[,] matrix = new double[reach * 2 + 1, reach * 2 + 1];
+            
+            for(int i = 0; i < reach * 2 + 1; i++)
+                for(int j = 0; j < reach * 2 + 1; j++)
+                    matrix[i, j] = 1;
+
+            this.ApplyConvolution(matrix);
         }
 
         private static byte[] ToEndian(int value, int size = 0)
