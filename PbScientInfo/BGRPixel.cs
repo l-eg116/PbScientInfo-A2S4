@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace PbScientInfo
 {
@@ -48,6 +49,28 @@ namespace PbScientInfo
             this.b = b;
             this.g = g;
             this.r = r;
+        }
+
+        public static BGRPixel NewHue(int hue, double saturation = 1, double value = 1)
+        {
+            hue %= 360;
+            saturation = Math.Max(0, Math.Min(1, saturation));
+            value = Math.Max(0, Math.Min(1, value));
+
+            double c = value * saturation;
+            double x = c * (1 - Math.Abs((hue / 60.0) % 2 - 1));
+            double m = value - c;
+
+            double r_, g_, b_;
+            if(hue < 60) (r_, g_, b_) = (c, x, 0);
+            else if(hue < 120) (r_, g_, b_) = (x, c, 0);
+            else if(hue < 180) (r_, g_, b_) = (0, c, x);
+            else if(hue < 240) (r_, g_, b_) = (0, x, c);
+            else if(hue < 300) (r_, g_, b_) = (x, 0, c);
+            else if(hue < 360) (r_, g_, b_) = (c, 0, x);
+            else (r_, g_, b_) = (-m, -m, -m);
+
+            return new BGRPixel((byte)((b_ + m) * 255), (byte)((g_ + m) * 255), (byte)((r_ + m) * 255));
         }
 
         public override string ToString()
