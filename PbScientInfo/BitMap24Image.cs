@@ -102,9 +102,12 @@ namespace PbScientInfo
             }
         }
 
-        private BitMap24Image()
+        public BitMap24Image()
         {
-
+            this.type = "BM";
+            this.body_offset = 0x36;
+            this.info_size = 0x28;
+            this.pixels = new BGRPixel[1, 1] { { new BGRPixel() } };
         }
         public BitMap24Image(string path)
         {
