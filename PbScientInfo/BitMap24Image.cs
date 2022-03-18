@@ -353,7 +353,7 @@ namespace PbScientInfo
         public void BoxBlur(uint reach = 1)
         {
             double[,] matrix = new double[reach * 2 + 1, reach * 2 + 1];
-            
+
             for(int i = 0; i < reach * 2 + 1; i++)
                 for(int j = 0; j < reach * 2 + 1; j++)
                     matrix[i, j] = 1;
@@ -419,6 +419,32 @@ namespace PbScientInfo
                 output += $"{bytes[i]:X2}{((i - 0x36 + 1) % 3 == 0 ? "|" : " ")}";
 
             return output;
+        }
+
+        public static BitMap24Image NewMandelbrot(int image_size, double centerX = 0, double centerY = 0, double reach = 1, uint depth = 250, double threshold = 2)
+        {
+            BitMap24Image mandelbrot = new BitMap24Image();
+
+            mandelbrot.pixels = new BGRPixel[image_size, image_size];
+
+            for(int i = 0; i < image_size; i++)
+            {
+                for(int j = 0; j < image_size; j++)
+                {
+                    double x = 2 * j * reach / (double)image_size - reach - centerX;
+                    double y = 2 * i * reach / (double)image_size - reach - centerY;
+
+                    double a = 0, b = 0;
+
+                    int n;
+                    for(n = 0; n < depth && Math.Sqrt(Math.Pow(a, 2) + Math.Pow(b, 2)) < threshold; n++)
+                        (a, b) = (Math.Pow(a, 2) - Math.Pow(b, 2) + x, 2 * a * b + y);
+
+                    mandelbrot.pixels[i, j] = n == depth ? new BGRPixel(0, 0, 0) : BGRPixel.NewHue((int)(360 * n / depth));
+                }
+            }
+
+            return mandelbrot;
         }
     }
 }
