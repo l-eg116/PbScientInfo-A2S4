@@ -449,5 +449,23 @@ namespace PbScientInfo
 
             return mandelbrot;
         }
+        public static BitMap24Image NewSierpinskiCarpet(uint levels, BGRPixel foreground = null, BGRPixel background = null)
+        {
+            if(foreground == null) foreground = new BGRPixel(255, 255, 255);
+            if(background == null) background = new BGRPixel(0, 0, 0);
+
+            BitMap24Image carpet = new BitMap24Image();
+            carpet.pixels = new BGRPixel[1, 1] { { foreground } };
+
+            for(int n = 0; n < levels; n++)
+            {
+                carpet.Scale(3);
+                for(int i = 1; i < carpet.Height; i += 3)
+                    for(int j = 1; j < carpet.Width; j += 3)
+                        carpet.pixels[i, j] = background;
+            }
+
+            return carpet;
+        }
     }
 }
