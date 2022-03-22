@@ -233,7 +233,7 @@ namespace PbScientInfo
                 for(int y = 0; y < this.Width; y++)
                     this.pixels[x, y].Invert();
         }
-        public void Resize(int new_height, int new_width)
+        public void Resize(uint new_height, uint new_width)
         {
             double height_ratio = this.Height / (double)new_height;
             double width_ratio = this.Width / (double)new_width;
@@ -383,7 +383,7 @@ namespace PbScientInfo
             this.ApplyConvolution(matrix);
         }
 
-        private static byte[] ToEndian(int value, int size = 0)
+        private static byte[] ToEndian(int value, uint size = 0)
         {
             if(size < 1) for(size = 1; value >= (int)Math.Pow(256, size); size++) ;
             byte[] bytes = new byte[size];
@@ -421,7 +421,7 @@ namespace PbScientInfo
             return output;
         }
 
-        public static BitMap24Image NewMandelbrot(int image_width, double hw_ratio = 1, double centerX = 0, double centerY = 0, double reach = 1, uint depth = 250, double threshold = 2)
+        public static BitMap24Image NewMandelbrot(uint image_width, double hw_ratio = 1, double centerX = 0, double centerY = 0, double reach = 1, uint depth = 250, double threshold = 2)
         {
             BitMap24Image mandelbrot = new BitMap24Image();
 
