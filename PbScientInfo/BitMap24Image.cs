@@ -428,11 +428,10 @@ namespace PbScientInfo
             mandelbrot.pixels = new BGRPixel[image_size, image_size];
 
             for(int i = 0; i < image_size; i++)
-            {
                 for(int j = 0; j < image_size; j++)
                 {
-                    double x = 2 * j * reach / (double)image_size - reach - centerX;
-                    double y = 2 * i * reach / (double)image_size - reach - centerY;
+                    double x = 2 * j * reach / (double)image_size - reach + centerX;
+                    double y = 2 * i * reach / (double)image_size - reach + centerY;
 
                     double a = 0, b = 0;
 
@@ -442,7 +441,6 @@ namespace PbScientInfo
 
                     mandelbrot.pixels[i, j] = n == depth ? new BGRPixel(0, 0, 0) : BGRPixel.NewHue((int)(360 * n / depth));
                 }
-            }
 
             return mandelbrot;
         }
