@@ -279,6 +279,10 @@ namespace PbScientInfo
 
             this.pixels = resized;
         }
+        public void Scale(double factor)
+        {
+            this.Resize((int)(this.Height * factor), (int)(this.Width * factor));
+        }
         public void Rotate(double angle, BGRPixel background_pixel = null)
         {
             angle *= -Math.PI / 180;
