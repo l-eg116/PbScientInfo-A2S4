@@ -281,7 +281,7 @@ namespace PbScientInfo
         }
         public void Scale(double factor)
         {
-            this.Resize((int)(this.Height * factor), (int)(this.Width * factor));
+            this.Resize((uint)(this.Height * factor), (uint)(this.Width * factor));
         }
         public void Rotate(double angle, BGRPixel background_pixel = null)
         {
@@ -392,7 +392,7 @@ namespace PbScientInfo
             if(size < 1) for(size = 1; value >= (int)Math.Pow(256, size); size++) ;
             byte[] bytes = new byte[size];
 
-            for(int i = size - 1; i >= 0; i--)
+            for(int i = (int)size - 1; i >= 0; i--)
             {
                 value %= (int)Math.Pow(256, i + 1);
                 bytes[i] = (byte)(value / (int)Math.Pow(256, i));
