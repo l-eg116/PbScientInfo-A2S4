@@ -425,7 +425,7 @@ namespace PbScientInfo
             return output;
         }
 
-        public static BitMap24Image NewMandelbrot(uint image_width, double hw_ratio = 1, double centerX = 0, double centerY = 0, double reach = 1, uint depth = 250, double threshold = 2)
+        public static BitMap24Image NewMandelbrot(uint image_width, double hw_ratio = 1, double centerX = 0, double centerY = 0, double reach = 1, uint depth = 250)
         {
             BitMap24Image mandelbrot = new BitMap24Image();
 
@@ -441,7 +441,7 @@ namespace PbScientInfo
                     double a = 0, b = 0;
 
                     int n;
-                    for(n = 0; n < depth && Math.Sqrt(Math.Pow(a, 2) + Math.Pow(b, 2)) < threshold; n++)
+                    for(n = 0; n < depth && Math.Sqrt(Math.Pow(a, 2) + Math.Pow(b, 2)) < 2; n++)
                         (a, b) = (Math.Pow(a, 2) - Math.Pow(b, 2) + x, 2 * a * b + y);
 
                     mandelbrot.pixels[i, j] = n == depth ? new BGRPixel(0, 0, 0) : BGRPixel.NewHue((int)(360 * n / depth));
