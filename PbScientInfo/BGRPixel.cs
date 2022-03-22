@@ -118,7 +118,7 @@ namespace PbScientInfo
                 b += pixel.b;
             }
 
-            return new BGRPixel((byte)(b / pixels.Count), (byte)(g / pixels.Count), (byte)(r / pixels.Count));
+            return new BGRPixel((byte)Math.Round(b / (double)pixels.Count), (byte)Math.Round(g / (double)pixels.Count), (byte)Math.Round(r / (double)pixels.Count));
         }
         public static BGRPixel FuseWeighted(List<(BGRPixel, double)> weighted_pixels)
         {
@@ -144,7 +144,7 @@ namespace PbScientInfo
                 total_weight += weight;
             }
 
-            return new BGRPixel((byte)(b / total_weight), (byte)(g / total_weight), (byte)(r / total_weight));
+            return new BGRPixel((byte)Math.Round(b / total_weight), (byte)Math.Round(g / total_weight), (byte)Math.Round(r / total_weight));
         }
     }
 }
