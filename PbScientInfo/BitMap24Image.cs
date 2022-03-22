@@ -449,6 +449,30 @@ namespace PbScientInfo
 
             return mandelbrot;
         }
+        public static BitMap24Image NewJuliaSet(uint image_width, double hw_ratio = 1, double pointX = 0, double pointY = 0, double centerX = 0, double centerY = 0, double reach = 1.25, uint depth = 250)
+        {
+            BitMap24Image julia = new BitMap24Image();
+
+            int image_height = (int)(image_width / hw_ratio);
+            julia.pixels = new BGRPixel[image_height, image_width];
+
+            for(int i = 0; i < image_height; i++)
+                for(int j = 0; j < image_width; j++)
+                {
+                    double x = 2 * j * reach / (double)image_width - reach + centerX;
+                    double y = 2 * i * (reach / hw_ratio) / (double)image_height - reach / hw_ratio + centerY;
+
+                    double a = x, b = y;
+
+                    int n;
+                    for(n = 0; n < depth && Math.Sqrt(Math.Pow(a, 2) + Math.Pow(b, 2)) < 2; n++)
+                        (a, b) = (Math.Pow(a, 2) - Math.Pow(b, 2) + pointX, 2 * a * b + pointY);
+
+                    julia.pixels[i, j] = n == depth ? new BGRPixel(0, 0, 0) : BGRPixel.NewHue((int)(360 * n / depth));
+                }
+
+            return julia;
+        }
         public static BitMap24Image NewSierpinskiCarpet(uint levels, BGRPixel foreground = null, BGRPixel background = null)
         {
             if(foreground == null) foreground = new BGRPixel(255, 255, 255);
