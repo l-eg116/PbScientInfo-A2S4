@@ -409,7 +409,10 @@ namespace PbScientInfo
 
             for(int y = 0; y < 256; y++)
                 for(int x = 0; x < histogram.Height; x++)
-                    histogram.pixels[x, y] = new BGRPixel((byte)(x * (double)max_count / histogram.Height < b_count[y] ? 0xFF : 0), (byte)(x * (double)max_count / histogram.Height < g_count[y] ? 0xFF : 0), (byte)(x * (double)max_count / histogram.Height < r_count[y] ? 0xFF : 0));
+                    histogram.pixels[x, y] =
+                        new BGRPixel((byte)(x * (double)max_count / histogram.Height < b_count[y] ? 0xFF : 0),
+                                    (byte)(x * (double)max_count / histogram.Height < g_count[y] ? 0xFF : 0),
+                                    (byte)(x * (double)max_count / histogram.Height < r_count[y] ? 0xFF : 0));
 
             return histogram;
         }
