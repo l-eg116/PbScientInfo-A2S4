@@ -421,17 +421,18 @@ namespace PbScientInfo
             return output;
         }
 
-        public static BitMap24Image NewMandelbrot(int image_size, double centerX = 0, double centerY = 0, double reach = 1, uint depth = 250, double threshold = 2)
+        public static BitMap24Image NewMandelbrot(int image_width, double hw_ratio = 1, double centerX = 0, double centerY = 0, double reach = 1, uint depth = 250, double threshold = 2)
         {
             BitMap24Image mandelbrot = new BitMap24Image();
 
-            mandelbrot.pixels = new BGRPixel[image_size, image_size];
+            int image_height = (int)(image_width / hw_ratio);
+            mandelbrot.pixels = new BGRPixel[image_height, image_width];
 
-            for(int i = 0; i < image_size; i++)
-                for(int j = 0; j < image_size; j++)
+            for(int i = 0; i < image_height; i++)
+                for(int j = 0; j < image_width; j++)
                 {
-                    double x = 2 * j * reach / (double)image_size - reach + centerX;
-                    double y = 2 * i * reach / (double)image_size - reach + centerY;
+                    double x = 2 * j * reach / (double)image_width - reach + centerX;
+                    double y = 2 * i * (reach / hw_ratio) / (double)image_height - reach / hw_ratio + centerY;
 
                     double a = 0, b = 0;
 
