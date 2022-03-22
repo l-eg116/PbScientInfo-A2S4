@@ -387,6 +387,33 @@ namespace PbScientInfo
             this.ApplyConvolution(matrix);
         }
 
+        public BitMap24Image Histrogram(bool resize = false)
+        {
+            int[] r_count = new int[256];
+            int[] g_count = new int[256];
+            int[] b_count = new int[256];
+
+            foreach(BGRPixel pixel in this.pixels)
+            {
+                r_count[pixel.R]++;
+                g_count[pixel.G]++;
+                b_count[pixel.B]++;
+            }
+
+            int max_count = 0;
+            for(int i = 0; i < 256; i++)
+                max_count = Math.Max(Math.Max(max_count, r_count[i]), Math.Max(g_count[i], b_count[i]));
+
+            BitMap24Image histogram = new BitMap24Image();
+            histogram.pixels = new BGRPixel[resize ? 256 : max_count, 256];
+
+            for(int y = 0; y < 256; y++)
+                for(int x = 0; x < histogram.Height; x++)
+                    histogram.pixels[x, y] = new BGRPixel((byte)(x * (double)max_count / histogram.Height < b_count[y] ? 0xFF : 0), (byte)(x * (double)max_count / histogram.Height < g_count[y] ? 0xFF : 0), (byte)(x * (double)max_count / histogram.Height < r_count[y] ? 0xFF : 0));
+
+            return histogram;
+        }
+
         private static byte[] ToEndian(int value, uint size = 0)
         {
             if(size < 1) for(size = 1; value >= (int)Math.Pow(256, size); size++) ;
