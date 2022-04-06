@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace PbScientInfo
 {
@@ -7,11 +9,7 @@ namespace PbScientInfo
     {
         static void Main(string[] args)
         {
-            BitMap24Image image = new BitMap24Image(@"test_items\coco.bmp");
-            
-            Console.WriteLine(image.ToString());
-
-            image.SaveTo(@"C:\Users\legco\source\repos\PbScientInfo\PbScientInfo\test_items\OUTPUT.bmp");
+            Console.WriteLine(BitMap24Image.QR_DataCodeBlocks(1, 'Q'));
         }
     }
 }
