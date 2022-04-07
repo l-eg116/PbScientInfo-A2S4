@@ -524,6 +524,89 @@ namespace PbScientInfo
             return carpet;
         }
 
+        public static BitMap24Image NewQRCode(string content, uint version = 0, char correction = 'L', string encoding = "", uint mask = 0)
+        {
+            // # Auto mode
+            // Choosing best encoding
+            if(encoding != "numeric" && encoding != "alphanumeric" && encoding != "byte" && encoding != "kanji")
+            {
+                bool contains_kanji = Regex.IsMatch(content, "^[一-龯]*$");
+                bool contains_iso8859 = Regex.IsMatch(content, "^[\x20-\x7E\xA0-\xA3\xA5\xA7\xA9-\xB3\xB5-\xB7\xB9-\xBB\xBF-\xFF\u20AC\u0160\u0161\u017D\u017E\u0152\u0153\u0178]*$");
+                bool contains_alphanum = Regex.IsMatch(content, @"^[A-Z0-9\s$%*+\-/.:]*$");
+                bool contains_numbers = Regex.IsMatch(content, "^[0-9]*$");
+
+                if(contains_numbers && !contains_alphanum && !contains_iso8859 && !contains_kanji) encoding = "numeric";
+                else if(contains_alphanum && !contains_iso8859 && !contains_kanji) encoding = "alphanumeric";
+                else if(contains_iso8859 && !contains_kanji) encoding = "byte";
+                else if(contains_kanji) encoding = "kanji";
+                else encoding = "alphanumeric";
+            } // TODO : fix encoding selection choosing wrong encoding (space skipping alphanum ?)
+
+            // Choosing best correction
+            correction = correction.ToString().ToUpper()[0];
+            if(correction != 'L' && correction != 'M' && correction != 'Q' && correction != 'H')
+                correction = 'M';
+
+            // Choosing best version
+            if(version == 0 || version > 40)
+                version = QR_FindVersion(encoding, correction, content.Length);
+
+            // # Creation of bit string
+            // Mode indicator
+            bool[] mode_indicator = new bool[] { false, false, false, false };
+            switch(encoding)
+            {
+                case "numeric":
+                    mode_indicator = new bool[] { false, false, false, true };
+                    break;
+                case "alphanumeric":
+                    mode_indicator = new bool[] { false, false, true, false };
+                    break;
+                case "byte":
+                    mode_indicator = new bool[] { false, true, false, false };
+                    break;
+                case "kanji":
+                    mode_indicator = new bool[] { true, false, false, false };
+                    break;
+            }
+
+            // Character count indicator
+            bool[] character_count_indicator = new bool[0];
+            if(version <= 9)
+                switch(encoding)
+                {
+                    case "numeric":
+                        character_count_indicator = new bool[10];
+                        break;
+                    case "alphanumeric":
+                        character_count_indicator = new bool[9];
+                        break;
+                    case "byte":
+                        character_count_indicator = new bool[8];
+                        break;
+                    case "kanji":
+                        character_count_indicator = new bool[8];
+                        break;
+                }
+            else if(version >= 10 && version <= 26)
+                switch(encoding)
+                {
+                    case "numeric":
+                        character_count_indicator = new bool[12];
+                        break;
+                    case "alphanumeric":
+                        character_count_indicator = new bool[11];
+                        break;
+                    case "byte":
+                        character_count_indicator = new bool[16];
+                        break;
+                    case "kanji":
+                        character_count_indicator = new bool[10];
+                        break;
+                }
+            if(version >= 27)
+                switch(encoding)
+                {
                     case "numeric":
                         character_count_indicator = new bool[14];
                         break;
