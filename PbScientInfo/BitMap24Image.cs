@@ -524,6 +524,77 @@ namespace PbScientInfo
             return carpet;
         }
 
+                    case "numeric":
+                        character_count_indicator = new bool[14];
+                        break;
+                    case "alphanumeric":
+                        character_count_indicator = new bool[16];
+                        break;
+                    case "byte":
+                        character_count_indicator = new bool[13];
+                        break;
+                    case "kanji":
+                        character_count_indicator = new bool[12];
+                        break;
+                }
+            QR_IntToBits(character_count_indicator, content.Length);
+
+            // Content bit string
+            bool[] content_bits = QR_Encode(content, encoding).ToArray();
+
+            // Merging
+            bool[] init_bit_string = new bool[mode_indicator.Length + character_count_indicator.Length + content_bits.Length];
+            mode_indicator.CopyTo(init_bit_string, 0);
+            character_count_indicator.CopyTo(init_bit_string, mode_indicator.Length);
+            content_bits.CopyTo(init_bit_string, mode_indicator.Length + character_count_indicator.Length);
+
+            // Adding terminator bits
+            int qr_bit_capacity = QR_ErrorCorrectionTable(version, correction)[0] * 8;
+            bool[] terminated_bits = new bool[Math.Min(init_bit_string.Length + 4, qr_bit_capacity)];
+            init_bit_string.CopyTo(terminated_bits, 0);
+
+            // Making it fit to bytes
+            bool[] byted_bits;
+            if(terminated_bits.Length % 8 == 0) byted_bits = new bool[terminated_bits.Length];
+            else byted_bits = new bool[(terminated_bits.Length / 8 + 1) * 8];
+            terminated_bits.CopyTo(byted_bits, 0);
+
+            // Final padding
+            bool[] padded_bits = new bool[qr_bit_capacity];
+            bool[][] padding = new bool[][] { new bool[] { true, true, true, false, true, true, false, false },
+                                            new bool[] { false, false, false, true, false, false, false, true } };
+            for(int i = byted_bits.Length; i < qr_bit_capacity; i += 8)
+                padding[i / 8 % 2].CopyTo(padded_bits, i);
+            byted_bits.CopyTo(padded_bits, 0);
+
+            // Memory cleanup
+            mode_indicator = null;
+            character_count_indicator = null;
+            content_bits = null;
+            init_bit_string = null;
+            terminated_bits = null;
+            byted_bits = null;
+
+            // Converting to bytes
+            byte[] qr_bytes = new byte[padded_bits.Length / 8];
+            for(int i = 0; i < padded_bits.Length; i += 8)
+                for(int j = 0; j < 8; j++)
+                    if(padded_bits[i + j])
+                        qr_bytes[i / 8] += (byte)Math.Pow(2, 7 - j);
+            padded_bits = null;
+
+            // # Error correction coding
+            // Breaking into blocks
+            int[] ect_line = QR_ErrorCorrectionTable(version, correction);
+            byte[][,] qr_blocks = new byte[][,] { new byte[ect_line[2], ect_line[3]], new byte[ect_line[4], ect_line[5]] };
+            int n = 0;
+            for(int grp = 0; grp < 2; grp++)
+                for(int blk = 0; blk < qr_blocks[grp].GetLength(0); blk++)
+                    for(int i = 0; i < qr_blocks[grp].GetLength(0); i++)
+                        qr_blocks[grp][blk, i] = qr_bytes[n++];
+
+            return new BitMap24Image();
+        }
         private static uint QR_FindVersion(string encoding, char correction, int data_length)
         {
             // qr_capacity_table[version, correction, mode]
@@ -661,20 +732,177 @@ namespace PbScientInfo
 
             return bit_string;
         }
-        public static int QR_DataCodeBlocks(int version, char correction)
+        public static int[] QR_ErrorCorrectionTable(uint version, char correction)
         {
-            int[] code_block_table = new int[] { 19, 16, 13, 9, 34, 28, 22, 16, 55, 44, 34, 26, 80, 64, 48, 36, 108, 86,
-                62, 46, 136, 108, 76, 60, 156, 124, 88, 66, 194, 154, 110, 86, 232, 182, 132, 100, 274, 216, 154, 122, 324,
-                254, 180, 140, 370, 290, 206, 158, 428, 334, 244, 180, 461, 365, 261, 197, 523, 415, 295, 223, 589, 453, 325,
-                253, 647, 507, 367, 283, 721, 563, 397, 313, 795, 627, 445, 341, 861, 669, 485, 385, 932, 714, 512, 406, 1006,
-                782, 568, 442, 1094, 860, 614, 464, 1174, 914, 664, 514, 1276, 1000, 718, 538, 1370, 1062, 754, 596, 1468, 1128,
-                808, 628, 1531, 1193, 871, 661, 1631, 1267, 911, 701, 1735, 1373, 985, 745, 1843, 1455, 1033, 793, 1955, 1541,
-                1115, 845, 2071, 1631, 1171, 901, 2191, 1725, 1231, 961, 2306, 1812, 1286, 986, 2434, 1914, 1354, 1054, 2566,
-                1992, 1426, 1096, 2702, 2102, 1502, 1142, 2812, 2216, 1582, 1222, 2956, 2334, 1666, 1276 };
+            // [v][0] Total Number of Data Codewords for this Version and EC Level
+            // [v][1] EC Codewords Per Block
+            // [v][2] Number of Blocks in Group 1
+            // [v][3] Number of Data Codewords in Each of Group 1's Blocks
+            // [v][4] Number of Blocks in Group 2
+            // [v][5] Number of Data Codewords in Each of Group 2's Blocks
+            int[][] ec_table = new int[][]
+                { new int[] { 19, 7, 1, 19, 0, 0 },
+                new int[] { 16, 10, 1, 16, 0, 0 },
+                new int[] { 13, 13, 1, 13, 0, 0 },
+                new int[] { 9, 17, 1, 9, 0, 0 },
+                new int[] { 34, 10, 1, 34, 0, 0 },
+                new int[] { 28, 16, 1, 28, 0, 0 },
+                new int[] { 22, 22, 1, 22, 0, 0 },
+                new int[] { 16, 28, 1, 16, 0, 0 },
+                new int[] { 55, 15, 1, 55, 0, 0 },
+                new int[] { 44, 26, 1, 44, 0, 0 },
+                new int[] { 34, 18, 2, 17, 0, 0 },
+                new int[] { 26, 22, 2, 13, 0, 0 },
+                new int[] { 80, 20, 1, 80, 0, 0 },
+                new int[] { 64, 18, 2, 32, 0, 0 },
+                new int[] { 48, 26, 2, 24, 0, 0 },
+                new int[] { 36, 16, 4, 9, 0, 0 },
+                new int[] { 108, 26, 1, 108, 0, 0 },
+                new int[] { 86, 24, 2, 43, 0, 0 },
+                new int[] { 62, 18, 2, 15, 2, 16 },
+                new int[] { 46, 22, 2, 11, 2, 12 },
+                new int[] { 136, 18, 2, 68, 0, 0 },
+                new int[] { 108, 16, 4, 27, 0, 0 },
+                new int[] { 76, 24, 4, 19, 0, 0 },
+                new int[] { 60, 28, 4, 15, 0, 0 },
+                new int[] { 156, 20, 2, 78, 0, 0 },
+                new int[] { 124, 18, 4, 31, 0, 0 },
+                new int[] { 88, 18, 2, 14, 4, 15 },
+                new int[] { 66, 26, 4, 13, 1, 14 },
+                new int[] { 194, 24, 2, 97, 0, 0 },
+                new int[] { 154, 22, 2, 38, 2, 39 },
+                new int[] { 110, 22, 4, 18, 2, 19 },
+                new int[] { 86, 26, 4, 14, 2, 15 },
+                new int[] { 232, 30, 2, 116, 0, 0 },
+                new int[] { 182, 22, 3, 36, 2, 37 },
+                new int[] { 132, 20, 4, 16, 4, 17 },
+                new int[] { 100, 24, 4, 12, 4, 13 },
+                new int[] { 274, 18, 2, 68, 2, 69 },
+                new int[] { 216, 26, 4, 43, 1, 44 },
+                new int[] { 154, 24, 6, 19, 2, 20 },
+                new int[] { 122, 28, 6, 15, 2, 16 },
+                new int[] { 324, 20, 4, 81, 0, 0,  },
+                new int[] { 254, 30, 1, 50, 4, 51 },
+                new int[] { 180, 28, 4, 22, 4, 23 },
+                new int[] { 140, 24, 3, 12, 8, 13 },
+                new int[] { 370, 24, 2, 92, 2, 93 },
+                new int[] { 290, 22, 6, 36, 2, 37 },
+                new int[] { 206, 26, 4, 20, 6, 21 },
+                new int[] { 158, 28, 7, 14, 4, 15 },
+                new int[] { 428, 26, 4, 107, 0, 0 },
+                new int[] { 334, 22, 8, 37, 1, 38 },
+                new int[] { 244, 24, 8, 20, 4, 21 },
+                new int[] { 180, 22, 12, 11, 4, 12 },
+                new int[] { 461, 30, 3, 115, 1, 116 },
+                new int[] { 365, 24, 4, 40, 5, 41 },
+                new int[] { 261, 20, 11, 16, 5, 17 },
+                new int[] { 197, 24, 11, 12, 5, 13 },
+                new int[] { 523, 22, 5, 87, 1, 88 },
+                new int[] { 415, 24, 5, 41, 5, 42 },
+                new int[] { 295, 30, 5, 24, 7, 25 },
+                new int[] { 223, 24, 11, 12, 7, 13 },
+                new int[] { 589, 24, 5, 98, 1, 99 },
+                new int[] { 453, 28, 7, 45, 3, 46 },
+                new int[] { 325, 24, 15, 19, 2, 20 },
+                new int[] { 253, 30, 3, 15, 13, 16 },
+                new int[] { 647, 28, 1, 107, 5, 108 },
+                new int[] { 507, 28, 10, 46, 1, 47 },
+                new int[] { 367, 28, 1, 22, 15, 23 },
+                new int[] { 283, 28, 2, 14, 17, 15 },
+                new int[] { 721, 30, 5, 120, 1, 121 },
+                new int[] { 563, 26, 9, 43, 4, 44 },
+                new int[] { 397, 28, 17, 22, 1, 23 },
+                new int[] { 313, 28, 2, 14, 19, 15 },
+                new int[] { 795, 28, 3, 113, 4, 114 },
+                new int[] { 627, 26, 3, 44, 11, 45 },
+                new int[] { 445, 26, 17, 21, 4, 22 },
+                new int[] { 341, 26, 9, 13, 16, 14 },
+                new int[] { 861, 28, 3, 107, 5, 108 },
+                new int[] { 669, 26, 3, 41, 13, 42 },
+                new int[] { 485, 30, 15, 24, 5, 25 },
+                new int[] { 385, 28, 15, 15, 10, 16 },
+                new int[] { 932, 28, 4, 116, 4, 117 },
+                new int[] { 714, 26, 17, 42, 0, 0 },
+                new int[] { 512, 28, 17, 22, 6, 23 },
+                new int[] { 406, 30, 19, 16, 6, 17 },
+                new int[] { 1006, 28, 2, 111, 7, 112 },
+                new int[] { 782, 28, 17, 46, 0, 0,  },
+                new int[] { 568, 30, 7, 24, 16, 25 },
+                new int[] { 442, 24, 34, 13, 0, 0 },
+                new int[] { 1094, 30, 4, 121, 5, 122 },
+                new int[] { 860, 28, 4, 47, 14, 48 },
+                new int[] { 614, 30, 11, 24, 14, 25 },
+                new int[] { 464, 30, 16, 15, 14, 16 },
+                new int[] { 1174, 30, 6, 117, 4, 118 },
+                new int[] { 914, 28, 6, 45, 14, 46 },
+                new int[] { 664, 30, 11, 24, 16, 25 },
+                new int[] { 514, 30, 30, 16, 2, 17 },
+                new int[] { 1276, 26, 8, 106, 4, 107 },
+                new int[] { 1000, 28, 8, 47, 13, 48 },
+                new int[] { 718, 30, 7, 24, 22, 25 },
+                new int[] { 538, 30, 22, 15, 13, 16 },
+                new int[] { 1370, 28, 10, 114, 2, 115 },
+                new int[] { 1062, 28, 19, 46, 4, 47 },
+                new int[] { 754, 28, 28, 22, 6, 23 },
+                new int[] { 596, 30, 33, 16, 4, 17 },
+                new int[] { 1468, 30, 8, 122, 4, 123 },
+                new int[] { 1128, 28, 22, 45, 3, 46 },
+                new int[] { 808, 30, 8, 23, 26, 24 },
+                new int[] { 628, 30, 12, 15, 28, 16 },
+                new int[] { 1531, 30, 3, 117, 10, 118 },
+                new int[] { 1193, 28, 3, 45, 23, 46 },
+                new int[] { 871, 30, 4, 24, 31, 25 },
+                new int[] { 661, 30, 11, 15, 31, 16 },
+                new int[] { 1631, 30, 7, 116, 7, 117 },
+                new int[] { 1267, 28, 21, 45, 7, 46 },
+                new int[] { 911, 30, 1, 23, 37, 24 },
+                new int[] { 701, 30, 19, 15, 26, 16 },
+                new int[] { 1735, 30, 5, 115, 10, 116 },
+                new int[] { 1373, 28, 19, 47, 10, 48 },
+                new int[] { 985, 30, 15, 24, 25, 25 },
+                new int[] { 745, 30, 23, 15, 25, 16 },
+                new int[] { 1843, 30, 13, 115, 3, 116 },
+                new int[] { 1455, 28, 2, 46, 29, 47 },
+                new int[] { 1033, 30, 42, 24, 1, 25 },
+                new int[] { 793, 30, 23, 15, 28, 16 },
+                new int[] { 1955, 30, 17, 115, 0, 0 },
+                new int[] { 1541, 28, 10, 46, 23, 47 },
+                new int[] { 1115, 30, 10, 24, 35, 25 },
+                new int[] { 845, 30, 19, 15, 35, 16 },
+                new int[] { 2071, 30, 17, 115, 1, 116 },
+                new int[] { 1631, 28, 14, 46, 21, 47 },
+                new int[] { 1171, 30, 29, 24, 19, 25 },
+                new int[] { 901, 30, 11, 15, 46, 16 },
+                new int[] { 2191, 30, 13, 115, 6, 116 },
+                new int[] { 1725, 28, 14, 46, 23, 47 },
+                new int[] { 1231, 30, 44, 24, 7, 25 },
+                new int[] { 961, 30, 59, 16, 1, 17 },
+                new int[] { 2306, 30, 12, 121, 7, 122 },
+                new int[] { 1812, 28, 12, 47, 26, 48 },
+                new int[] { 1286, 30, 39, 24, 14, 25 },
+                new int[] { 986, 30, 22, 15, 41, 16 },
+                new int[] { 2434, 30, 6, 121, 14, 122 },
+                new int[] { 1914, 28, 6, 47, 34, 48 },
+                new int[] { 1354, 30, 46, 24, 10, 25 },
+                new int[] { 1054, 30, 2, 15, 64, 16 },
+                new int[] { 2566, 30, 17, 122, 4, 123 },
+                new int[] { 1992, 28, 29, 46, 14, 47 },
+                new int[] { 1426, 30, 49, 24, 10, 25 },
+                new int[] { 1096, 30, 24, 15, 46, 16 },
+                new int[] { 2702, 30, 4, 122, 18, 123 },
+                new int[] { 2102, 28, 13, 46, 32, 47 },
+                new int[] { 1502, 30, 48, 24, 14, 25 },
+                new int[] { 1142, 30, 42, 15, 32, 16 },
+                new int[] { 2812, 30, 20, 117, 4, 118 },
+                new int[] { 2216, 28, 40, 47, 7, 48 },
+                new int[] { 1582, 30, 43, 24, 22, 25 },
+                new int[] { 1222, 30, 10, 15, 67, 16 },
+                new int[] { 2956, 30, 19, 118, 6, 119 },
+                new int[] { 2334, 28, 18, 47, 31, 48 },
+                new int[] { 1666, 30, 34, 24, 34, 25 },
+                new int[] { 1276, 30, 20, 15, 61, 16 } };
 
-            int correction_int = "LMQH".IndexOf(correction);
-
-            return code_block_table[(version - 1) * 4 + correction_int];
+            return ec_table[(version - 1) * 4 + "LMQH".IndexOf(correction)];
         }
     }
 }
