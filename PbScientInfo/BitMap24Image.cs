@@ -321,13 +321,16 @@ namespace PbScientInfo
 
 			this.pixels = rotated;
 		}
-		public void ApplyConvolution(double[,] matrix, string edge_mode = "kernel_crop")
+		public void ApplyConvolution(double[,] matrix, bool ignore_total = false, string edge_mode = "kernel_crop")
 		{
 			if(matrix == null || matrix.GetLength(0) != matrix.GetLength(1) || matrix.GetLength(0) % 2 == 0)
 				return;
 
 			BGRPixel[,] copy = (BGRPixel[,])this.pixels.Clone();
 			int matrix_radius = matrix.GetLength(0) / 2;
+			for(int i = 0; i < matrix_radius; i++)
+				for(int j = 0; j < matrix.GetLength(1); j++)
+					(matrix[i, j], matrix[matrix_radius * 2 - i, j]) = (matrix[matrix_radius * 2 - i, j], matrix[i, j]);
 
 			for(int x = 0; x < this.Height; x++)
 				for(int y = 0; y < this.Width; y++)
@@ -345,16 +348,16 @@ namespace PbScientInfo
 										weighted_pixels.Add((copy[x + i - matrix_radius, y + j - matrix_radius].Copy, matrix[i, j]));
 									break;
 							}
-					this.pixels[x, y] = BGRPixel.FuseWeighted(weighted_pixels);
+					this.pixels[x, y] = BGRPixel.FuseWeighted(weighted_pixels, ignore_total);
 				}
 		}
 		public void EdgeDetection()
 		{
-			this.ApplyConvolution(new double[3, 3] { { -1, -1, -1 }, { -1, 8, -1 }, { -1, -1, -1 } });
+			this.ApplyConvolution(new double[3, 3] { { -1, -1, -1 }, { -1, 8, -1 }, { -1, -1, -1 } }, true);
 		}
 		public void Sharpen()
 		{
-			this.ApplyConvolution(new double[3, 3] { { -1, -1, -1 }, { -1, 9, -1 }, { -1, -1, -1 } });
+			this.ApplyConvolution(new double[3, 3] { { -1, -1, -1 }, { -1, 9, -1 }, { -1, -1, -1 } }, true);
 		}
 		public void BoxBlur(uint reach = 1)
 		{
@@ -364,7 +367,7 @@ namespace PbScientInfo
 				for(int j = 0; j < reach * 2 + 1; j++)
 					matrix[i, j] = 1;
 
-			this.ApplyConvolution(matrix);
+			this.ApplyConvolution(matrix, false);
 		}
 		public void GaussianBlur(uint reach = 2, double deviation = 1)
 		{
@@ -376,7 +379,7 @@ namespace PbScientInfo
 				for(int j = 0; j < reach * 2 + 1; j++)
 					matrix[i, j] = Math.Exp(-(Math.Pow(i - reach, 2) + Math.Pow(j - reach, 2)) / (2 * Math.Pow(deviation, 2))) / (2 * Math.PI * Math.Pow(deviation, 2));
 
-			this.ApplyConvolution(matrix);
+			this.ApplyConvolution(matrix, false);
 		}
 		public void Emboss(uint reach = 1)
 		{
@@ -386,7 +389,7 @@ namespace PbScientInfo
 				if(i - reach < 0) matrix[i, i] = -1;
 				else if(i - reach > 0) matrix[i, i] = 1;
 
-			this.ApplyConvolution(matrix);
+			this.ApplyConvolution(matrix, false);
 		}
 
 		public BitMap24Image Histrogram(bool resize = false)

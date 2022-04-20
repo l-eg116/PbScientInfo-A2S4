@@ -132,7 +132,7 @@ namespace PbScientInfo
 				BGRPixel pixel = pair.Item1;
 				double weight = pair.Item2;
 
-				if(weight < 0)
+				if(weight < 0 && !ignore_total)
 				{
 					pixel.Invert();
 					weight *= -1;
@@ -145,9 +145,9 @@ namespace PbScientInfo
 			}
 
 			if(ignore_total)
-				return new BGRPixel((byte)Math.Max(0, Math.Min(255, Math.Round(b))),
-									(byte)Math.Max(0, Math.Min(255, Math.Round(g))),
-									(byte)Math.Max(0, Math.Min(255, Math.Round(r))));
+				return new BGRPixel((byte)Math.Round(Math.Max(0, Math.Min(255, b))),
+									(byte)Math.Round(Math.Max(0, Math.Min(255, g))),
+									(byte)Math.Round(Math.Max(0, Math.Min(255, r))));
 			else
 				return new BGRPixel((byte)Math.Round(b / total_weight),
 									(byte)Math.Round(g / total_weight),
