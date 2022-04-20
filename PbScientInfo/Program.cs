@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-namespace PbScientInfo
+﻿namespace PbScientInfo
 {
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            Console.WriteLine(BitMap24Image.QR_DataCodeBlocks(1, 'Q'));
-        }
-    }
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			BitMap24Image coco = new BitMap24Image("test_items\\coco.bmp");
+
+			coco.EdgeDetection();
+
+			coco.SaveTo(@"C:\Users\legco\source\repos\PbScientInfo\PbScientInfo\test_items\OUTPUT.bmp");
+		}
+	}
 }
