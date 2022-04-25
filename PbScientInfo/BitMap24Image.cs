@@ -1047,7 +1047,8 @@ namespace PbScientInfo
 
 			return prod;
 		}
-		public static byte[] QR_CorrectionPolynomial(int degre)
+		private static byte[] QR_CorrGeneratorPolynomial(int degre)
+
 		{
 			byte[] pol = new byte[] { 0, 0 };
 
@@ -1056,5 +1057,27 @@ namespace PbScientInfo
 
 			return pol;
 		}
+		private static byte[] QR_CorrectionPolynomial(byte[] message, uint corr_pol_len)
+        {
+			byte[] correction = new byte[message.Length + corr_pol_len]; // int notation
+			for(int i = 0; i < message.Length; i++)
+				correction[correction.Length - 1 - i] = message[i];
+			byte[] generator = QR_CorrGeneratorPolynomial((int)corr_pol_len); // aplha notation
+
+			for(int i = message.Length + (int)corr_pol_len - 1; i >= corr_pol_len; i--)
+            {
+				byte mult_factor = QR_GF256Log(correction[i]); // alpha notation
+				for(int j = generator.Length - 1; j >= 0; j--)
+                {
+					correction[i - (generator.Length - 1) + j] ^= QR_GF256AntiLog((byte)((generator[j] + mult_factor) % 255));
+                }
+            }
+
+			byte[] trimed = new byte[corr_pol_len];
+			for (int i = 0; i < corr_pol_len; i++)
+				trimed[i] = correction[i];
+
+			return trimed;
+        }
 	}
 }
