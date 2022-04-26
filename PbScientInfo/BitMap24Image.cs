@@ -743,6 +743,16 @@ namespace PbScientInfo
 				else
 					bits[bits.Length - i - 1] = false;
 		}
+		private static bool[] QR_ByteToBitString(byte num)
+		{
+			bool[] bits = new bool[8];
+			for(int i = bits.Length - 1; i >= 0; i--)
+				if(num >= Math.Pow(2, i))
+					(num, bits[bits.Length - i - 1]) = ((byte)(num - Math.Pow(2, i)), true);
+				else
+					bits[bits.Length - i - 1] = false;
+			return bits;
+		}
 		private static int QR_CharToAlphanum(char character)
 		{
 			char[] alphanum_table = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
