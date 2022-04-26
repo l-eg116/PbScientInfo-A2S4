@@ -801,7 +801,7 @@ namespace PbScientInfo
 					foreach(char character in content)
 					{
 						byte[] bytes = shift_jis.GetBytes(character.ToString());
-						int char_val = bytes[0] * 256 +  bytes[1];
+						int char_val = bytes[0] * 256 + bytes[1];
 
 						if(0x8140 <= char_val && char_val <= 0x9FFC) char_val -= 0x8140;
 						else if(0xE040 <= char_val && char_val <= 0xEBBF) char_val -= 0xC140;
@@ -1058,26 +1058,35 @@ namespace PbScientInfo
 			return pol;
 		}
 		private static byte[] QR_CorrectionPolynomial(byte[] message, uint corr_pol_len)
-        {
+		{
 			byte[] correction = new byte[message.Length + corr_pol_len]; // int notation
 			for(int i = 0; i < message.Length; i++)
 				correction[correction.Length - 1 - i] = message[i];
 			byte[] generator = QR_CorrGeneratorPolynomial((int)corr_pol_len); // aplha notation
 
 			for(int i = message.Length + (int)corr_pol_len - 1; i >= corr_pol_len; i--)
-            {
-				byte mult_factor = QR_GF256Log(correction[i]); // alpha notation
-				for(int j = generator.Length - 1; j >= 0; j--)
-                {
-					correction[i - (generator.Length - 1) + j] ^= QR_GF256AntiLog((byte)((generator[j] + mult_factor) % 255));
-                }
-            }
+			{
+				if(correction[i] != 0)
+				{
+					byte mult_factor = QR_GF256Log(correction[i]); // alpha notation
+					for(int j = generator.Length - 1; j >= 0; j--)
+					{
+						correction[i - (generator.Length - 1) + j] ^= QR_GF256AntiLog((byte)((generator[j] + mult_factor) % 255));
+					}
+				}
+			}
 
 			byte[] trimed = new byte[corr_pol_len];
-			for (int i = 0; i < corr_pol_len; i++)
+			for(int i = 0; i < corr_pol_len; i++)
 				trimed[i] = correction[i];
 
 			return trimed;
-        }
+		}
+		private static int QR_RemainderBits(uint version)
+		{
+			int[] table = new int[] { 0, 7, 7, 7, 7, 7, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3,
+									4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0 };
+			return table[version - 1];
+		}
 	}
 }
