@@ -650,7 +650,7 @@ namespace PbScientInfo
 			bool[][] padding = new bool[][] { new bool[] { true, true, true, false, true, true, false, false },
 											new bool[] { false, false, false, true, false, false, false, true } };
 			for(int i = byted_bits.Length; i < qr_bit_capacity; i += 8)
-				padding[i / 8 % 2].CopyTo(padded_bits, i);
+				padding[(i / 8) % 2].CopyTo(padded_bits, i);
 			byted_bits.CopyTo(padded_bits, 0);
 
 			// Memory cleanup
@@ -672,14 +672,158 @@ namespace PbScientInfo
 			// # Error correction coding
 			// Breaking into blocks
 			int[] ect_line = QR_ErrorCorrectionTable(version, correction);
-			byte[][,] qr_blocks = new byte[][,] { new byte[ect_line[2], ect_line[3]], new byte[ect_line[4], ect_line[5]] };
+			byte[][,] data_blocks = new byte[][,] { new byte[ect_line[2], ect_line[3]], new byte[ect_line[4], ect_line[5]] };
 			int n = 0;
 			for(int grp = 0; grp < 2; grp++)
-				for(int blk = 0; blk < qr_blocks[grp].GetLength(0); blk++)
-					for(int i = 0; i < qr_blocks[grp].GetLength(0); i++)
-						qr_blocks[grp][blk, i] = qr_bytes[n++];
+				for(int blk = 0; blk < data_blocks[grp].GetLength(0); blk++)
+					for(int i = 0; i < data_blocks[grp].GetLength(1); i++)
+						data_blocks[grp][blk, i] = qr_bytes[n++];
 
-			return new BitMap24Image();
+			// Calculating correction codewords
+			byte[][,] corr_blocks = new byte[][,] { new byte[ect_line[2], ect_line[1]], new byte[ect_line[4], ect_line[1]] };
+			for(int grp = 0; grp < 2; grp++)
+				for(int blk = 0; blk < corr_blocks[grp].GetLength(0); blk++)
+				{
+					byte[] msg_block = new byte[data_blocks[grp].GetLength(1)];
+					for(int i = 0; i < msg_block.Length; i++)
+						msg_block[msg_block.Length - 1 - i] = data_blocks[grp][blk, i];
+					byte[] corr_word = QR_CorrectionPolynomial(msg_block, (uint)ect_line[1]);
+					for(int i = 0; i < corr_word.Length; i++)
+						corr_blocks[grp][blk, i] = corr_word[corr_word.Length - 1 - i];
+				}
+
+			// # Structuring final message
+			// Interleaving the blocks
+			byte[] interleaved_blocks = new byte[ect_line[0] + ect_line[1] * (ect_line[2] + ect_line[4])];
+			n = 0;
+			for(int word = 0; word < Math.Max(data_blocks[0].GetLength(1), data_blocks[0].GetLength(1)); word++)
+				for(int grp = 0; grp < 2; grp++)
+					for(int blk = 0; blk < data_blocks[grp].GetLength(0); blk++)
+						if(word < data_blocks[grp].GetLength(1))
+							interleaved_blocks[n++] = data_blocks[grp][blk, word];
+			for(int word = 0; word < ect_line[1]; word++)
+				for(int grp = 0; grp < 2; grp++)
+					for(int blk = 0; blk < corr_blocks[grp].GetLength(0); blk++)
+						interleaved_blocks[n++] = corr_blocks[grp][blk, word];
+
+			// Converting to binary and adding remainder bits
+			bool[] message_bit_string = new bool[interleaved_blocks.Length * 8 + QR_RemainderBits(version)];
+			for(int i = 0; i < interleaved_blocks.Length; i++)
+				QR_ByteToBitString(interleaved_blocks[i]).CopyTo(message_bit_string, i * 8);
+
+			// # Module placement
+			int qr_size = ((int)version - 1) * 4 + 21;
+			BitMap24Image qr_code = new BitMap24Image();
+			qr_code.pixels = new BGRPixel[qr_size, qr_size];
+			BGRPixel BLACK = new BGRPixel(0, 0, 0);
+			BGRPixel WHITE = new BGRPixel(255, 255, 255);
+			// >> false = white & true = black <<
+
+			// Finder patterns
+			for(int x = 0; x < 7; x++)
+				for(int y = 0; y < 7; y++)
+					qr_code.pixels[x, y] = qr_code.pixels[x + qr_size - 7, y] = qr_code.pixels[x, y + qr_size - 7] = BLACK;
+			for(int x = 1; x < 6; x++)
+				for(int y = 1; y < 6; y++)
+					qr_code.pixels[x, y] = qr_code.pixels[x + qr_size - 7, y] = qr_code.pixels[x, y + qr_size - 7] = WHITE;
+			for(int x = 2; x < 5; x++)
+				for(int y = 2; y < 5; y++)
+					qr_code.pixels[x, y] = qr_code.pixels[x + qr_size - 7, y] = qr_code.pixels[x, y + qr_size - 7] = BLACK;
+
+			// Separators
+			for(int x = 0, y = 7; x < 8; x++)
+				qr_code.pixels[x, y] = qr_code.pixels[qr_size - 1 - x, y] = qr_code.pixels[x, qr_size - 1 - y] = WHITE;
+			for(int x = 7, y = 0; y < 8; y++)
+				qr_code.pixels[x, y] = qr_code.pixels[qr_size - 1 - x, y] = qr_code.pixels[x, qr_size - 1 - y] = WHITE;
+
+			// Alignement patterns
+			int[] patterns_location = QR_AlignementLocations(version);
+			foreach(int x in patterns_location)
+				foreach(int y in patterns_location)
+					if(!(x == patterns_location[0] && y == patterns_location[0]) &&
+						!(x == patterns_location[0] && y == patterns_location[patterns_location.Length - 1]) &&
+						!(x == patterns_location[patterns_location.Length - 1] && y == patterns_location[0]))
+					{
+						for(int i = x - 2; i <= x + 2; i++)
+							for(int j = y - 2; j <= y + 2; j++)
+								qr_code.pixels[i, j] = BLACK;
+						for(int i = x - 1; i <= x + 1; i++)
+							for(int j = y - 1; j <= y + 1; j++)
+								qr_code.pixels[i, j] = WHITE;
+						qr_code.pixels[x, y] = BLACK;
+					}
+
+			// Timing patterns
+			for(int x = 7, y = 6; x < qr_size - 7; x++)
+			{
+				qr_code.pixels[x, y] = qr_code.pixels[x - 1, y].Copy;
+				qr_code.pixels[x, y].Invert();
+			}
+			for(int x = 6, y = 7; y < qr_size - 7; y++)
+			{
+				qr_code.pixels[x, y] = qr_code.pixels[x, y - 1].Copy;
+				qr_code.pixels[x, y].Invert();
+			}
+
+			// Dark module
+			qr_code.pixels[version * 4 + 9, 8] = BLACK;
+
+			// Reserved areas
+			if(version < 7)
+			{
+				for(int x = 0, y = 8; x < 9; x++)
+					if(qr_code.pixels[x, y] == null)
+						qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
+				for(int x = qr_size - 7, y = 8; x < qr_size; x++)
+					qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
+				for(int x = 8, y = 0; y < 8; y++)
+					if(qr_code.pixels[x, y] == null)
+						qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
+				for(int x = 8, y = qr_size - 8; y < qr_size; y++)
+					qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
+			}
+			else
+			{
+				for(int x = qr_size - 11; x < qr_size - 8; x++)
+					for(int y = 0; y < 6; y++)
+						qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
+				for(int y = qr_size - 11; y < qr_size - 8; y++)
+					for(int x = 0; x < 6; x++)
+						qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
+			}
+
+			// Data bits placement
+			bool upwards = true;
+			n = 0;
+			for(int y = qr_size - 1; y >= 0; y -= 2)
+			{
+				if(y == 6) y--;
+				if(upwards)
+				{
+					for(int x = qr_size - 1; x >= 0; x--)
+						for(int i = 0; i < 2; i++)
+							if(qr_code.pixels[x, y - i] == null)
+								qr_code.pixels[x, y - i] = message_bit_string[n++] ? BLACK : WHITE;
+				}
+				else
+				{
+					for(int x = 0; x < qr_size; x++)
+						for(int i = 0; i < 2; i++)
+							if(qr_code.pixels[x, y - i] == null)
+								qr_code.pixels[x, y - i] = message_bit_string[n++] ? BLACK : WHITE;
+				}
+				upwards = !upwards;
+			}
+
+
+			// Cleaning image
+			for(int x = 0; x < qr_size; x++)
+				for(int y = 0; y < qr_size; y++)
+					if(qr_code.pixels[x, y] == null)
+						qr_code.pixels[x, y] = new BGRPixel(0, 255, 0);
+			qr_code.FlipVertical();
+
+			return qr_code;
 		}
 		private static uint QR_FindVersion(string encoding, char correction, int data_length)
 		{
