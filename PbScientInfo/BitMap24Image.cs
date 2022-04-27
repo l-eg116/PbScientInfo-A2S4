@@ -719,101 +719,33 @@ namespace PbScientInfo
 			BGRPixel WHITE = new BGRPixel(255, 255, 255);
 			// >> false = white & true = black <<
 
-			// Finder patterns
-			for(int x = 0; x < 7; x++)
-				for(int y = 0; y < 7; y++)
-					qr_code.pixels[x, y] = qr_code.pixels[x + qr_size - 7, y] = qr_code.pixels[x, y + qr_size - 7] = BLACK;
-			for(int x = 1; x < 6; x++)
-				for(int y = 1; y < 6; y++)
-					qr_code.pixels[x, y] = qr_code.pixels[x + qr_size - 7, y] = qr_code.pixels[x, y + qr_size - 7] = WHITE;
-			for(int x = 2; x < 5; x++)
-				for(int y = 2; y < 5; y++)
-					qr_code.pixels[x, y] = qr_code.pixels[x + qr_size - 7, y] = qr_code.pixels[x, y + qr_size - 7] = BLACK;
-
-			// Separators
-			for(int x = 0, y = 7; x < 8; x++)
-				qr_code.pixels[x, y] = qr_code.pixels[qr_size - 1 - x, y] = qr_code.pixels[x, qr_size - 1 - y] = WHITE;
-			for(int x = 7, y = 0; y < 8; y++)
-				qr_code.pixels[x, y] = qr_code.pixels[qr_size - 1 - x, y] = qr_code.pixels[x, qr_size - 1 - y] = WHITE;
-
-			// Alignement patterns
-			int[] patterns_location = QR_AlignementLocations(version);
-			foreach(int x in patterns_location)
-				foreach(int y in patterns_location)
-					if(!(x == patterns_location[0] && y == patterns_location[0]) &&
-						!(x == patterns_location[0] && y == patterns_location[patterns_location.Length - 1]) &&
-						!(x == patterns_location[patterns_location.Length - 1] && y == patterns_location[0]))
-					{
-						for(int i = x - 2; i <= x + 2; i++)
-							for(int j = y - 2; j <= y + 2; j++)
-								qr_code.pixels[i, j] = BLACK;
-						for(int i = x - 1; i <= x + 1; i++)
-							for(int j = y - 1; j <= y + 1; j++)
-								qr_code.pixels[i, j] = WHITE;
-						qr_code.pixels[x, y] = BLACK;
-					}
-
-			// Timing patterns
-			for(int x = 7, y = 6; x < qr_size - 7; x++)
-			{
-				qr_code.pixels[x, y] = qr_code.pixels[x - 1, y].Copy;
-				qr_code.pixels[x, y].Invert();
-			}
-			for(int x = 6, y = 7; y < qr_size - 7; y++)
-			{
-				qr_code.pixels[x, y] = qr_code.pixels[x, y - 1].Copy;
-				qr_code.pixels[x, y].Invert();
-			}
-
-			// Dark module
-			qr_code.pixels[version * 4 + 9, 8] = BLACK;
-
-			// Reserved areas
-			if(version < 7)
-			{
-				for(int x = 0, y = 8; x < 9; x++)
-					if(qr_code.pixels[x, y] == null)
-						qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
-				for(int x = qr_size - 7, y = 8; x < qr_size; x++)
-					qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
-				for(int x = 8, y = 0; y < 8; y++)
-					if(qr_code.pixels[x, y] == null)
-						qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
-				for(int x = 8, y = qr_size - 8; y < qr_size; y++)
-					qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
-			}
-			else
-			{
-				for(int x = qr_size - 11; x < qr_size - 8; x++)
-					for(int y = 0; y < 6; y++)
-						qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
-				for(int y = qr_size - 11; y < qr_size - 8; y++)
-					for(int x = 0; x < 6; x++)
-						qr_code.pixels[x, y] = new BGRPixel(0, 0, 255);
-			}
+			QR_PlacePatterns(qr_code, BLACK, WHITE);
 
 			// Data bits placement
 			bool upwards = true;
 			n = 0;
-			for(int y = qr_size - 1; y >= 0; y -= 2)
+			try
 			{
-				if(y == 6) y--;
-				if(upwards)
+				for(int y = qr_size - 1; y >= 0; y -= 2)
 				{
-					for(int x = qr_size - 1; x >= 0; x--)
-						for(int i = 0; i < 2; i++)
-							if(qr_code.pixels[x, y - i] == null)
-								qr_code.pixels[x, y - i] = message_bit_string[n++] ? BLACK : WHITE;
+					if(y == 6) y--;
+					if(upwards)
+					{
+						for(int x = qr_size - 1; x >= 0; x--)
+							for(int i = 0; i < 2; i++)
+								if(qr_code.pixels[x, y - i] == null)
+									qr_code.pixels[x, y - i] = message_bit_string[n++] ? BLACK : WHITE;
+					}
+					else
+					{
+						for(int x = 0; x < qr_size; x++)
+							for(int i = 0; i < 2; i++)
+								if(qr_code.pixels[x, y - i] == null)
+									qr_code.pixels[x, y - i] = message_bit_string[n++] ? BLACK : WHITE;
+					}
+					upwards = !upwards;
 				}
-				else
-				{
-					for(int x = 0; x < qr_size; x++)
-						for(int i = 0; i < 2; i++)
-							if(qr_code.pixels[x, y - i] == null)
-								qr_code.pixels[x, y - i] = message_bit_string[n++] ? BLACK : WHITE;
-				}
-				upwards = !upwards;
-			}
+			} catch { }
 
 
 			// Cleaning image
@@ -1287,6 +1219,81 @@ namespace PbScientInfo
 				new int[] { 6, 30, 58, 86, 114, 142, 170 } };
 
 			return table[version - 1];
+		}
+		private static void QR_PlacePatterns(BitMap24Image qr_code, BGRPixel BLACK = null, BGRPixel WHITE = null)
+		{
+			int qr_size = qr_code.Height;
+			uint version = (uint)((qr_size - 21) / 4 + 1);
+			if(BLACK == null) BLACK = new BGRPixel(0, 0, 0);
+			if(WHITE == null) WHITE = !BLACK;
+			BGRPixel RESERVED = new BGRPixel(255, 0, 0);
+
+			// Finder patterns
+			for(int x = 0; x < 7; x++)
+				for(int y = 0; y < 7; y++)
+					qr_code.pixels[x, y] = qr_code.pixels[x + qr_size - 7, y] = qr_code.pixels[x, y + qr_size - 7] = BLACK;
+			for(int x = 1; x < 6; x++)
+				for(int y = 1; y < 6; y++)
+					qr_code.pixels[x, y] = qr_code.pixels[x + qr_size - 7, y] = qr_code.pixels[x, y + qr_size - 7] = WHITE;
+			for(int x = 2; x < 5; x++)
+				for(int y = 2; y < 5; y++)
+					qr_code.pixels[x, y] = qr_code.pixels[x + qr_size - 7, y] = qr_code.pixels[x, y + qr_size - 7] = BLACK;
+
+			// Separators
+			for(int x = 0, y = 7; x < 8; x++)
+				qr_code.pixels[x, y] = qr_code.pixels[qr_size - 1 - x, y] = qr_code.pixels[x, qr_size - 1 - y] = WHITE;
+			for(int x = 7, y = 0; y < 8; y++)
+				qr_code.pixels[x, y] = qr_code.pixels[qr_size - 1 - x, y] = qr_code.pixels[x, qr_size - 1 - y] = WHITE;
+
+			// Alignement patterns
+			int[] patterns_location = QR_AlignementLocations(version);
+			foreach(int x in patterns_location)
+				foreach(int y in patterns_location)
+					if(!(x == patterns_location[0] && y == patterns_location[0]) &&
+						!(x == patterns_location[0] && y == patterns_location[patterns_location.Length - 1]) &&
+						!(x == patterns_location[patterns_location.Length - 1] && y == patterns_location[0]))
+					{
+						for(int i = x - 2; i <= x + 2; i++)
+							for(int j = y - 2; j <= y + 2; j++)
+								qr_code.pixels[i, j] = BLACK;
+						for(int i = x - 1; i <= x + 1; i++)
+							for(int j = y - 1; j <= y + 1; j++)
+								qr_code.pixels[i, j] = WHITE;
+						qr_code.pixels[x, y] = BLACK;
+					}
+
+			// Timing patterns
+			for(int x = 7, y = 6; x < qr_size - 7; x++)
+				qr_code.pixels[x, y] = !qr_code.pixels[x - 1, y];
+			for(int x = 6, y = 7; y < qr_size - 7; y++)
+				qr_code.pixels[x, y] = !qr_code.pixels[x, y - 1];
+
+			// Dark module
+			qr_code.pixels[version * 4 + 9, 8] = BLACK;
+
+			// Reserved areas
+			if(version < 7)
+			{
+				for(int x = 0, y = 8; x < 9; x++)
+					if(qr_code.pixels[x, y] == null)
+						qr_code.pixels[x, y] = RESERVED;
+				for(int x = qr_size - 7, y = 8; x < qr_size; x++)
+					qr_code.pixels[x, y] = RESERVED;
+				for(int x = 8, y = 0; y < 8; y++)
+					if(qr_code.pixels[x, y] == null)
+						qr_code.pixels[x, y] = RESERVED;
+				for(int x = 8, y = qr_size - 8; y < qr_size; y++)
+					qr_code.pixels[x, y] = RESERVED;
+			}
+			else
+			{
+				for(int x = qr_size - 11; x < qr_size - 8; x++)
+					for(int y = 0; y < 6; y++)
+						qr_code.pixels[x, y] = RESERVED;
+				for(int y = qr_size - 11; y < qr_size - 8; y++)
+					for(int x = 0; x < 6; x++)
+						qr_code.pixels[x, y] = RESERVED;
+			}
 		}
 	}
 }
