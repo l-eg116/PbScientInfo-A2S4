@@ -51,6 +51,16 @@ namespace PbScientInfo
 			this.r = r;
 		}
 
+		public static bool operator ==(BGRPixel pixel1, BGRPixel pixel2)
+			=> pixel1 != null && pixel2 != null && pixel1.r == pixel2.r && pixel1.g == pixel2.g && pixel1.b == pixel2.b;
+		public static bool operator !=(BGRPixel pixel1, BGRPixel pixel2)
+			=> !(pixel1 == pixel2);
+		public static BGRPixel operator +(BGRPixel pixel) => pixel;
+		public static BGRPixel operator -(BGRPixel pixel)
+			=> new BGRPixel((byte)(255 - pixel.b), (byte)(255 - pixel.g), (byte)(255 - pixel.r));
+		public static BGRPixel operator !(BGRPixel pixel)
+			=> -pixel;
+
 		public static BGRPixel NewHue(int hue, double saturation = 1, double value = 1)
 		{
 			hue %= 360;
