@@ -1275,12 +1275,12 @@ namespace PbScientInfo
 			if(version < 7)
 			{
 				for(int x = 0, y = 8; x < 9; x++)
-					if(qr_code.pixels[x, y] == null)
+					if(x != 6)
 						qr_code.pixels[x, y] = RESERVED;
 				for(int x = qr_size - 7, y = 8; x < qr_size; x++)
 					qr_code.pixels[x, y] = RESERVED;
 				for(int x = 8, y = 0; y < 8; y++)
-					if(qr_code.pixels[x, y] == null)
+					if(y != 6)
 						qr_code.pixels[x, y] = RESERVED;
 				for(int x = 8, y = qr_size - 8; y < qr_size; y++)
 					qr_code.pixels[x, y] = RESERVED;
@@ -1294,6 +1294,113 @@ namespace PbScientInfo
 					for(int x = 0; x < 6; x++)
 						qr_code.pixels[x, y] = RESERVED;
 			}
+		}
+		private static int QR_PenaltyScore(BitMap24Image qr_code)
+		{
+			int qr_size = qr_code.Height;
+			int[] scores = new int[4];
+
+			// Rule 1 - following modules
+			for(int x = 0; x < qr_size; x++)
+			{
+				int following = 0;
+				for(int y = 1; y < qr_size; y++)
+				{
+					if(qr_code.pixels[x, y] == qr_code.pixels[x, y - 1]) following++;
+					else following = 0;
+					if(following == 4) scores[0] += 3;
+					else if(following > 4) scores[0] += 1;
+				}
+			}
+			for(int y = 0; y < qr_size; y++)
+			{
+				int following = 0;
+				for(int x = 1; x < qr_size; x++)
+				{
+					if(qr_code.pixels[x, y] == qr_code.pixels[x - 1, y]) following++;
+					else following = 0;
+					if(following == 4) scores[0] += 3;
+					else if(following > 4) scores[0] += 1;
+				}
+			}
+
+			// Rule 2 - same color blocks
+			for(int x = 1; x < qr_size; x++)
+				for(int y = 1; y < qr_size; y++)
+					if(qr_code.pixels[x, y] == qr_code.pixels[x - 1, y] &&
+						qr_code.pixels[x, y] == qr_code.pixels[x, y - 1] &&
+						qr_code.pixels[x, y] == qr_code.pixels[x - 1, y - 1])
+						scores[1]++;
+
+			// Rule 3 - BWBBBWBWWWW patterns
+			for(int x = 0; x < qr_size; x++)
+				for(int y = 0; y < qr_size - 11; y++)
+					if(+qr_code.pixels[x, y] == -qr_code.pixels[x, y + 1] &&
+						qr_code.pixels[x, y] == +qr_code.pixels[x, y + 2] &&
+						qr_code.pixels[x, y] == +qr_code.pixels[x, y + 3] &&
+						qr_code.pixels[x, y] == +qr_code.pixels[x, y + 4] &&
+						qr_code.pixels[x, y] == -qr_code.pixels[x, y + 5] &&
+						qr_code.pixels[x, y] == +qr_code.pixels[x, y + 6] &&
+						qr_code.pixels[x, y] == -qr_code.pixels[x, y + 7] &&
+						qr_code.pixels[x, y] == -qr_code.pixels[x, y + 8] &&
+						qr_code.pixels[x, y] == -qr_code.pixels[x, y + 9] &&
+						qr_code.pixels[x, y] == -qr_code.pixels[x, y + 10])
+						scores[2] += 40;
+			for(int y = 0; y < qr_size; y++)
+				for(int x = 0; x < qr_size - 11; x++)
+					if(+qr_code.pixels[x, y] == -qr_code.pixels[x + 1, y] &&
+						qr_code.pixels[x, y] == +qr_code.pixels[x + 2, y] &&
+						qr_code.pixels[x, y] == +qr_code.pixels[x + 3, y] &&
+						qr_code.pixels[x, y] == +qr_code.pixels[x + 4, y] &&
+						qr_code.pixels[x, y] == -qr_code.pixels[x + 5, y] &&
+						qr_code.pixels[x, y] == +qr_code.pixels[x + 6, y] &&
+						qr_code.pixels[x, y] == -qr_code.pixels[x + 7, y] &&
+						qr_code.pixels[x, y] == -qr_code.pixels[x + 8, y] &&
+						qr_code.pixels[x, y] == -qr_code.pixels[x + 9, y] &&
+						qr_code.pixels[x, y] == -qr_code.pixels[x + 10, y])
+						scores[2] += 40;
+
+			// Rule 4 - B/W ratio
+			int dark_amount = 0;
+			for(int x = 0; x < qr_size; x++)
+				for(int y = 0; y < qr_size; y++)
+					if(qr_code.pixels[x, y] == qr_code.pixels[0, 0])
+						dark_amount++;
+			int black_ratio = dark_amount / (qr_size * qr_size) * 100;
+			int prev_5_mult = black_ratio / 5 * 5, next_5_mult = prev_5_mult + 5;
+			scores[3] = Math.Min(Math.Abs(prev_5_mult - 50), Math.Abs(next_5_mult - 50)) * 10;
+
+			return scores[0] + scores[1] + scores[2] + scores[3];
+		}
+		private static BitMap24Image QR_MaskCode(BitMap24Image qr_code, int mask)
+		{
+			BitMap24Image masked_code = qr_code.Copy;
+			int qr_size = masked_code.Height;
+			mask %= 8;
+			bool Cond(int x, int y)
+			{
+				switch(mask)
+				{
+					case 0: return (x + y) % 2 == 0;
+					case 1: return x % 2 == 0;
+					case 2: return y % 3 == 0;
+					case 3: return (x + y) % 3 == 0;
+					case 4: return (x / 2 + y / 3) % 2 == 0;
+					case 5: return ((x * y) % 2) + ((x * y) % 3) == 0;
+					case 6: return (((x * y) % 2) + ((x * y) % 3)) % 2 == 0;
+					case 7: return (((x + y) % 3) + ((x * y) % 2)) % 2 == 0;
+					default: return false;
+				}
+			}
+
+			for(int x = 0; x < qr_size; x++)
+				for(int y = 0; y < qr_size; y++)
+					if(Cond(x, y))
+						masked_code.pixels[x, y].Invert();
+
+			QR_PlacePatterns(masked_code);
+
+			return masked_code;
 		}
 	}
 }
