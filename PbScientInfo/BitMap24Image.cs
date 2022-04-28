@@ -527,7 +527,7 @@ namespace PbScientInfo
 			return carpet;
 		}
 
-		public static BitMap24Image NewQRCode(string content, uint version = 0, char correction = 'L', string encoding = "", uint mask = 0)
+		public static BitMap24Image NewQRCode(string content, uint version = 0, char correction = 'L', string encoding = "", int mask = -1)
 		{
 			// # Auto mode
 			// Choosing best encoding
@@ -637,7 +637,8 @@ namespace PbScientInfo
 			// Adding terminator bits
 			int qr_bit_capacity = QR_ErrorCorrectionTable(version, correction)[0] * 8;
 			bool[] terminated_bits = new bool[Math.Min(init_bit_string.Length + 4, qr_bit_capacity)];
-			init_bit_string.CopyTo(terminated_bits, 0);
+			for(int i = 0; i < Math.Min(init_bit_string.Length, terminated_bits.Length); i++)
+				terminated_bits[i] = init_bit_string[i];
 
 			// Making it fit to bytes
 			bool[] byted_bits;
@@ -887,7 +888,7 @@ namespace PbScientInfo
 					foreach(char character in content)
 					{
 						byte[] bytes = shift_jis.GetBytes(character.ToString());
-						int char_val = bytes[0] * 256 + bytes[1];
+						int char_val = (bytes.Length == 1 ? bytes[0] : bytes[0] * 256 + bytes[1]);
 
 						if(0x8140 <= char_val && char_val <= 0x9FFC) char_val -= 0x8140;
 						else if(0xE040 <= char_val && char_val <= 0xEBBF) char_val -= 0xC140;
@@ -1401,6 +1402,86 @@ namespace PbScientInfo
 			QR_PlacePatterns(masked_code);
 
 			return masked_code;
+		}
+		private static bool[] QR_FormatErrorCorrection(bool[] format_string, uint version)
+		{
+			// Local functions
+			bool[] RemoveFirstZeros(bool[] table)
+			{
+				int start = -1;
+				for(int i = 0; i < table.Length && start < 0; i++)
+					if(table[i])
+						start = i;
+
+				if(start >= 0)
+				{
+					bool[] temp = new bool[table.Length - start];
+					for(int i = 0; i < temp.Length; i++)
+						temp[i] = table[i + start];
+					return temp;
+				}
+				else
+					return new bool[0];
+			}
+
+			if(version < 7)
+			{
+				bool[] generator = new bool[]
+				{ true, false, true, false, false, true, true, false, true, true, true };
+
+				// Padding format string
+				bool[] correction_string = new bool[15];
+				format_string.CopyTo(correction_string, 0);
+				correction_string = RemoveFirstZeros(correction_string);
+
+				while(correction_string.Length > 10)
+				{
+					for(int i = 0; i < correction_string.Length; i++)
+						if(i < generator.Length)
+							correction_string[i] ^= generator[i];
+						else
+							correction_string[i] ^= false;
+					correction_string = RemoveFirstZeros(correction_string);
+				}
+
+				if(correction_string.Length != 10)
+				{
+					bool[] temp = new bool[10];
+					correction_string.CopyTo(temp, 10 - correction_string.Length);
+					correction_string = temp;
+				}
+
+				return correction_string;
+			}
+			else
+			{
+				bool[] generator = new bool[]
+				{ true, true, true, true, true, false, false, true, false, false, true, false, true };
+
+				// Padding format string
+				bool[] correction_string = new bool[18];
+				format_string.CopyTo(correction_string, 0);
+				correction_string = RemoveFirstZeros(correction_string);
+
+				while(correction_string.Length > 12)
+				{
+					for(int i = 0; i < correction_string.Length; i++)
+						if(i < generator.Length)
+							correction_string[i] ^= generator[i];
+						else
+							correction_string[i] ^= false;
+					correction_string = RemoveFirstZeros(correction_string);
+				}
+
+				if(correction_string.Length != 12)
+				{
+					bool[] temp = new bool[12];
+					correction_string.CopyTo(temp, 12 - correction_string.Length);
+					correction_string = temp;
+				}
+
+				return correction_string;
+			}
 		}
 	}
 }
