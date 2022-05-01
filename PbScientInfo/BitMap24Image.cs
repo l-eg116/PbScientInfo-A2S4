@@ -9,7 +9,7 @@ namespace PbScientInfo
 	/// <summary>
 	/// Represents a BitMap image
 	/// </summary>
-	class BitMap24Image
+	public class BitMap24Image
 	{
 		/// <summary>
 		/// Represents the type of the file, should be "BM"

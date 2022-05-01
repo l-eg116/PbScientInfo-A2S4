@@ -6,7 +6,7 @@ namespace PbScientInfo
 	/// <summary>
 	/// Represents a BGR pixel
 	/// </summary>
-	class BGRPixel
+	public class BGRPixel
 	{
 		/// <summary>
 		/// Represents the Red value of the pixel
