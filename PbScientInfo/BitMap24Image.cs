@@ -161,10 +161,10 @@ namespace PbScientInfo
 
 		public override string ToString()
 		{
-			return $"<BitMap24Image>\n"
-				+ $"type = {this.type}, size = {this.Size} bytes\n"
-				+ $"header info size = 0x{this.info_size:X}, body offset = 0x{this.body_offset:X}\n"
-				+ $"height = {this.Height}, width = {this.Width}\n"
+			return $"<BitMap24Image> \n"
+				+ $"type = {this.type}, size = {this.Size} bytes \n"
+				+ $"header info size = 0x{this.info_size:X}, body offset = 0x{this.body_offset:X} \n"
+				+ $"height = {this.Height}, width = {this.Width} \n"
 				+ $"pixels = \n{this.PixelsToString()}";
 		}
 		public string PixelsToString()
@@ -237,6 +237,8 @@ namespace PbScientInfo
 		}
 		public void Resize(uint new_height, uint new_width)
 		{
+			if(new_height == 0) new_height = (uint)this.Height;
+			if(new_width == 0) new_width = (uint)this.Width;
 			double height_ratio = this.Height / (double)new_height;
 			double width_ratio = this.Width / (double)new_width;
 
