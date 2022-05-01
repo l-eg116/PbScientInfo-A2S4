@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace PbScientInfo
 {
+	/// <summary>
+	/// Represents a BGR pixel
+	/// </summary>
 	class BGRPixel
 	{
 		/// <summary>

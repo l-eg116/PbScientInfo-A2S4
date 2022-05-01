@@ -6,6 +6,9 @@ using System.Text.RegularExpressions;
 
 namespace PbScientInfo
 {
+	/// <summary>
+	/// Represents a BitMap image
+	/// </summary>
 	class BitMap24Image
 	{
 		/// <summary>
