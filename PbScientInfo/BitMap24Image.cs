@@ -1437,7 +1437,8 @@ namespace PbScientInfo
 		}
 		private static BitMap24Image QR_MaskCode(BitMap24Image qr_code, int mask)
 		{
-			BitMap24Image masked_code = qr_code.Copy;
+			BitMap24Image masked_code = new BitMap24Image();
+			masked_code.pixels = (BGRPixel[,])qr_code.pixels.Clone();
 			int qr_size = masked_code.Height;
 			mask %= 8;
 			bool Cond(int x, int y)
@@ -1451,7 +1452,7 @@ namespace PbScientInfo
 					case 4: return (x / 2 + y / 3) % 2 == 0;
 					case 5: return ((x * y) % 2) + ((x * y) % 3) == 0;
 					case 6: return (((x * y) % 2) + ((x * y) % 3)) % 2 == 0;
-					case 7: return (((x + y) % 3) + ((x * y) % 2)) % 2 == 0;
+					case 7: return (((x + y) % 2) + ((x * y) % 3)) % 2 == 0;
 					default: return false;
 				}
 			}
