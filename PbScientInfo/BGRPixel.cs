@@ -100,7 +100,7 @@ namespace PbScientInfo
 
 		public void Grayify()
 		{
-			int med = (this.r + this.g + this.b) / 3;
+			int med = (int)Math.Round((this.r + this.g + this.b) / 3.0);
 			(this.r, this.g, this.b) = ((byte)med, (byte)med, (byte)med);
 		}
 		public void Invert()
