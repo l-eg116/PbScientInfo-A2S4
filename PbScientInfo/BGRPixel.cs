@@ -19,7 +19,7 @@ namespace PbScientInfo
 		private byte b;
 
 		/// <summary>
-		/// Represents the Red value of the pixel
+		/// Gets the Red value of the pixel
 		/// </summary>
 		public byte R
 		{
@@ -27,7 +27,7 @@ namespace PbScientInfo
 			set { this.r = value; }
 		}
 		/// <summary>
-		/// Represents the Green value of the pixel
+		/// Gets the Green value of the pixel
 		/// </summary>
 		public byte G
 		{
@@ -35,7 +35,7 @@ namespace PbScientInfo
 			set { this.g = value; }
 		}
 		/// <summary>
-		/// Represents the Blue value of the pixel
+		/// Gets the Blue value of the pixel
 		/// </summary>
 		public byte B
 		{
@@ -43,14 +43,14 @@ namespace PbScientInfo
 			set { this.b = value; }
 		}
 		/// <summary>
-		/// Represents the Blue, Green and Red value of the pixel
+		/// Gets the Blue, Green and Red value of the pixel
 		/// </summary>
 		public (byte, byte, byte) BGR
 		{
 			get { return (this.b, this.g, this.r); }
 		}
 		/// <summary>
-		/// Gives a shallow copy of the pixel
+		/// Gets a shallow copy of the pixel
 		/// </summary>
 		public BGRPixel Copy
 		{
