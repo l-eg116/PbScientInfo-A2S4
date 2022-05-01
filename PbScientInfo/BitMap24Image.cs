@@ -527,7 +527,7 @@ namespace PbScientInfo
 			return carpet;
 		}
 
-		public static BitMap24Image NewQRCode(string content, uint version = 0, char correction = 'L', string encoding = "", int mask = -1)
+		public static BitMap24Image NewQRCode(string content, char correction = 'M', uint version = 0, string encoding = "", int mask = -1)
 		{
 			// # Auto mode
 			// Choosing best encoding
