@@ -95,10 +95,10 @@ namespace PbScientInfo
 			{
 				BitMap24Image copy = new BitMap24Image();
 
-				copy.type = this.type;
+				copy.type = (string)this.type.Clone();
 				copy.body_offset = this.body_offset;
 				copy.info_size = this.info_size;
-				copy.pixels = this.pixels;
+				copy.pixels = (BGRPixel[,])this.pixels.Clone();
 
 				return copy;
 			}
