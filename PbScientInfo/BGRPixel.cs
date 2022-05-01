@@ -5,29 +5,53 @@ namespace PbScientInfo
 {
 	class BGRPixel
 	{
+		/// <summary>
+		/// Represents the Red value of the pixel
+		/// </summary>
 		private byte r;
+		/// <summary>
+		/// Represents the Green value of the pixel
+		/// </summary>
 		private byte g;
+		/// <summary>
+		/// Represents the Blue value of the pixel
+		/// </summary>
 		private byte b;
 
+		/// <summary>
+		/// Represents the Red value of the pixel
+		/// </summary>
 		public byte R
 		{
 			get { return this.r; }
 			set { this.r = value; }
 		}
+		/// <summary>
+		/// Represents the Green value of the pixel
+		/// </summary>
 		public byte G
 		{
 			get { return this.g; }
 			set { this.g = value; }
 		}
+		/// <summary>
+		/// Represents the Blue value of the pixel
+		/// </summary>
 		public byte B
 		{
 			get { return this.b; }
 			set { this.b = value; }
 		}
+		/// <summary>
+		/// Represents the Blue, Green and Red value of the pixel
+		/// </summary>
 		public (byte, byte, byte) BGR
 		{
 			get { return (this.b, this.g, this.r); }
 		}
+		/// <summary>
+		/// Gives a shallow copy of the pixel
+		/// </summary>
 		public BGRPixel Copy
 		{
 			get
@@ -36,14 +60,27 @@ namespace PbScientInfo
 			}
 		}
 
+		/// <summary>
+		/// Create a new black pixel
+		/// </summary>
 		public BGRPixel()
 		{
 			(this.b, this.g, this.r) = (0, 0, 0);
 		}
+		/// <summary>
+		/// Create a new pixel
+		/// </summary>
+		/// <param name="bgr">Blue, green and red values of the pixel</param>
 		public BGRPixel((byte, byte, byte) bgr)
 		{
 			(this.b, this.g, this.r) = bgr;
 		}
+		/// <summary>
+		/// Create a new pixel
+		/// </summary>
+		/// <param name="b">Blue value of the pixel</param>
+		/// <param name="g">Green value of the pixel</param>
+		/// <param name="r">Red value of the pixel</param>
 		public BGRPixel(byte b, byte g, byte r)
 		{
 			this.b = b;
@@ -51,18 +88,52 @@ namespace PbScientInfo
 			this.r = r;
 		}
 
+		/// <summary>
+		/// Verifies if pixels are the same color
+		/// </summary>
+		/// <param name="pixel1">First pixel</param>
+		/// <param name="pixel2">Second pixel</param>
+		/// <returns>If pixels have the same color</returns>
 		public static bool operator ==(BGRPixel pixel1, BGRPixel pixel2)
-			=> (pixel1 is null && pixel2 is null) || 
+			=> (pixel1 is null && pixel2 is null) ||
 			(!(pixel1 is null) && !(pixel2 is null) && pixel1.r == pixel2.r && pixel1.g == pixel2.g && pixel1.b == pixel2.b);
+		/// <summary>
+		/// Verifies if pixels have different colors
+		/// </summary>
+		/// <param name="pixel1">First pixel</param>
+		/// <param name="pixel2">Second pixel</param>
+		/// <returns>If pixels have different colors</returns>
 		public static bool operator !=(BGRPixel pixel1, BGRPixel pixel2)
 			=> !(pixel1 == pixel2);
+		/// <summary>
+		/// Create a shallow copy of the pixel
+		/// </summary>
+		/// <param name="pixel">Pixel to create a copy of</param>
+		/// <returns>A shallow copy of the pixel</returns>
 		public static BGRPixel operator +(BGRPixel pixel)
 			=> new BGRPixel(pixel.BGR);
+		/// <summary>
+		/// Create a shallow copy of the inverted pixel
+		/// </summary>
+		/// <param name="pixel">Pixel to create a copy of the inverse</param>
+		/// <returns>An inverted copy of the pixel</returns>
 		public static BGRPixel operator -(BGRPixel pixel)
 			=> new BGRPixel((byte)(255 - pixel.b), (byte)(255 - pixel.g), (byte)(255 - pixel.r));
+		/// <summary>
+		/// Create a shallow copy of the inverted pixel
+		/// </summary>
+		/// <param name="pixel">Pixel to create a copy of the inverse</param>
+		/// <returns>An inverted copy of the pixel</returns>
 		public static BGRPixel operator !(BGRPixel pixel)
 			=> -pixel;
 
+		/// <summary>
+		/// Create a new RGB pixel from a hue, saturation and value (HSV standart)
+		/// </summary>
+		/// <param name="hue">Hue</param>
+		/// <param name="saturation">Saturation</param>
+		/// <param name="value">Value</param>
+		/// <returns>A new RGB pixel from HSV</returns>
 		public static BGRPixel NewHue(int hue, double saturation = 1, double value = 1)
 		{
 			hue %= 360;
@@ -85,30 +156,52 @@ namespace PbScientInfo
 			return new BGRPixel((byte)((b_ + m) * 255), (byte)((g_ + m) * 255), (byte)((r_ + m) * 255));
 		}
 
+		/// <summary>
+		/// Returns a string tha represents the pixel
+		/// </summary>
+		/// <returns>"BB GG RR"</returns>
 		public override string ToString()
 		{
 			return this.ToHexString();
 		}
+		/// <summary>
+		/// Returns a string tha represents the pixel in hexadecimal
+		/// </summary>
+		/// <returns>"BB GG RR"</returns>
 		public string ToHexString()
 		{
 			return $"{this.b:X2} {this.g:X2} {this.r:X2}";
 		}
+		/// <summary>
+		/// Returns a string tha represents the pixel in decimal
+		/// </summary>
+		/// <returns>"BBB GGG RRR"</returns>
 		public string ToDecString()
 		{
 			return $"{this.b:D3} {this.g:D3} {this.r:D3}";
 		}
 
+		/// <summary>
+		/// Evens out the Blue, Green and Red values of the pixel, making it a shade of gray
+		/// </summary>
 		public void Grayify()
 		{
 			int med = (int)Math.Round((this.r + this.g + this.b) / 3.0);
 			(this.r, this.g, this.b) = ((byte)med, (byte)med, (byte)med);
 		}
+		/// <summary>
+		/// Inverts the Blue, Green and Red value of the pixel
+		/// </summary>
 		public void Invert()
 		{
 			this.r = (byte)(255 - this.r);
 			this.g = (byte)(255 - this.g);
 			this.b = (byte)(255 - this.b);
 		}
+		/// <summary>
+		/// Merge a pixel to this instance by evening their Blue, Green and Red values two by two
+		/// </summary>
+		/// <param name="pixel">Pixel to merge</param>
 		public void Merge(BGRPixel pixel)
 		{
 			if(pixel == null) return;
@@ -117,6 +210,11 @@ namespace PbScientInfo
 			this.g = (byte)((this.g + pixel.g) / 2);
 			this.b = (byte)((this.b + pixel.b) / 2);
 		}
+		/// <summary>
+		/// Returns a new pixel whose Blue, Green and Red values are the mean of those of the pixels in the list
+		/// </summary>
+		/// <param name="pixels">List of pixels to fuse</param>
+		/// <returns>A pixel whose Blue, Green and Red values are the mean of those of the pixels in the list</returns>
 		public static BGRPixel Fuse(List<BGRPixel> pixels)
 		{
 			int r = 0;
@@ -132,6 +230,13 @@ namespace PbScientInfo
 
 			return new BGRPixel((byte)Math.Round(b / (double)pixels.Count), (byte)Math.Round(g / (double)pixels.Count), (byte)Math.Round(r / (double)pixels.Count));
 		}
+		/// <summary>
+		/// Returns a new pixel whose Blue, Green and Red values are the mean
+		/// of those of the pixels in the list according to their weight
+		/// </summary>
+		/// <param name="pixels">List of pixels to fuse paired with their weight</param>
+		/// <param name="ignore_total">If the end pixel's BGR values should NOT be divided by total weight</param>
+		/// <returns>A pixel whose Blue, Green and Red values are the mean of those of the weighted pixels in the list</returns>
 		public static BGRPixel FuseWeighted(List<(BGRPixel, double)> weighted_pixels, bool ignore_total = false)
 		{
 			double r = 0;
