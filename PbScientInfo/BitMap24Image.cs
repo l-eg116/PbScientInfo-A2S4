@@ -8,40 +8,76 @@ namespace PbScientInfo
 {
 	class BitMap24Image
 	{
+		/// <summary>
+		/// Represents the type of the file, should be "BM"
+		/// </summary>
 		private string type;
+		/// <summary>
+		/// Represents the index at which the body starts, should be 54
+		/// </summary>
 		private int body_offset;
+		/// <summary>
+		/// Represents the size of the Header Info, should be 40
+		/// </summary>
 		private int info_size;
+		/// <summary>
+		/// Represents the pixel matrix of the image
+		/// </summary>
 		private BGRPixel[,] pixels;
 
+		/// <summary>
+		/// Gets the type of the image, should be "BM"
+		/// </summary>
 		public string Type
 		{
 			get { return this.type; }
 		}
+		/// <summary>
+		/// Gets the size of the image in bytes
+		/// </summary>
 		public int Size
 		{
 			get { return 14 + this.info_size + this.Height * this.Width * 3 + this.Height * ((this.Width * 3) % 4 == 0 ? 0 : 4 - (this.Width * 3) % 4); }
 		}
+		/// <summary>
+		/// Gets the index at which the body starts
+		/// </summary>
 		public int BodyOffset
 		{
 			get { return this.body_offset; }
 		}
+		/// <summary>
+		/// Gets the Hearder Info's size in bytes
+		/// </summary>
 		public int InfoSize
 		{
 			get { return this.info_size; }
 		}
+		/// <summary>
+		/// Gets the width of the image in pixels
+		/// </summary>
 		public int Width
 		{
 			get { return this.pixels.GetLength(1); }
 		}
+		/// <summary>
+		/// Gets the height of the image in pixels
+		/// </summary>
 		public int Height
 		{
 			get { return this.pixels.GetLength(0); }
 		}
+		/// <summary>
+		/// Gets the pixel matrix of the image
+		/// </summary>
 		public BGRPixel[,] Pixels
 		{
 			get { return this.pixels; }
 		}
 
+		/// <summary>
+		/// Gets the byte string representing the image file
+		/// </summary>
 		public byte[] Bytes
 		{
 			get
@@ -89,6 +125,9 @@ namespace PbScientInfo
 				return bytes;
 			}
 		}
+		/// <summary>
+		/// Gets a shallow copy of the image
+		/// </summary>
 		public BitMap24Image Copy
 		{
 			get
@@ -104,6 +143,9 @@ namespace PbScientInfo
 			}
 		}
 
+		/// <summary>
+		/// Create a new 1x1 BitMap24Image
+		/// </summary>
 		public BitMap24Image()
 		{
 			this.type = "BM";
@@ -111,6 +153,10 @@ namespace PbScientInfo
 			this.info_size = 0x28;
 			this.pixels = new BGRPixel[1, 1] { { new BGRPixel() } };
 		}
+		/// <summary>
+		/// Opens a existing BitMap image from a file path
+		/// </summary>
+		/// <param name="path">Path to a .bmp file</param>
 		public BitMap24Image(string path)
 		{
 			byte[] bytes = File.ReadAllBytes(path);
@@ -154,11 +200,19 @@ namespace PbScientInfo
 				n += ((n - this.body_offset) % 4 == 0 ? 0 : 4 - (n - this.body_offset) % 4);
 			}
 		}
+		/// <summary>
+		/// Saves the image to a file, will replace existing file
+		/// </summary>
+		/// <param name="path">Path to save to</param>
 		public void SaveTo(string path)
 		{
 			File.WriteAllBytes(path, this.Bytes);
 		}
 
+		/// <summary>
+		/// Returns a string that represents the image
+		/// </summary>
+		/// <returns>A string that represents the image</returns>
 		public override string ToString()
 		{
 			return $"<BitMap24Image> \n"
@@ -167,6 +221,10 @@ namespace PbScientInfo
 				+ $"height = {this.Height}, width = {this.Width} \n"
 				+ $"pixels = \n{this.PixelsToString()}";
 		}
+		/// <summary>
+		/// Returns a string that represents the pixel matrix of the image
+		/// </summary>
+		/// <returns>A string that represents the pixel matrix of the image</returns>
 		public string PixelsToString()
 		{
 			string output = "";
@@ -177,6 +235,10 @@ namespace PbScientInfo
 
 			return output;
 		}
+		/// <summary>
+		/// Returns a string that represents the bytes of the image
+		/// </summary>
+		/// <returns>A string that represents the bytes of the image</returns>
 		public string BytesToString()
 		{
 			string output = "";
@@ -195,6 +257,9 @@ namespace PbScientInfo
 			return output;
 		}
 
+		/// <summary>
+		/// Rotates the image 90° clockwise (DEPRECATED)
+		/// </summary>
 		public void RotateCW()
 		{
 			BGRPixel[,] copy = this.pixels;
@@ -203,6 +268,9 @@ namespace PbScientInfo
 				for(int y = 0; y < this.Width; y++)
 					this.pixels[x, y] = copy[this.Width - y - 1, x];
 		}
+		/// <summary>
+		/// Rotates the image 90° counter clockwise (DEPRECATED)
+		/// </summary>
 		public void RotateCCW()
 		{
 			BGRPixel[,] copy = this.pixels;
@@ -211,30 +279,47 @@ namespace PbScientInfo
 				for(int y = 0; y < this.Width; y++)
 					this.pixels[x, y] = copy[y, this.Height - x - 1];
 		}
+		/// <summary>
+		/// Flips the top and the bottom of the image
+		/// </summary>
 		public void FlipVertical()
 		{
 			for(int x = 0; x < this.Height / 2; x++)
 				for(int y = 0; y < this.Width; y++)
 					(this.pixels[x, y], this.pixels[this.Height - x - 1, y]) = (this.pixels[this.Height - x - 1, y], this.pixels[x, y]);
 		}
+		/// <summary>
+		/// Flips the right and the left of the image
+		/// </summary>
 		public void FlipHorizontal()
 		{
 			for(int x = 0; x < this.Height; x++)
 				for(int y = 0; y < this.Width / 2; y++)
 					(this.pixels[x, y], this.pixels[x, this.Width - y - 1]) = (this.pixels[x, this.Width - y - 1], this.pixels[x, y]);
 		}
+		/// <summary>
+		/// Turns the image into shades of gray
+		/// </summary>
 		public void Grayify()
 		{
 			for(int x = 0; x < this.Height; x++)
 				for(int y = 0; y < this.Width; y++)
 					this.pixels[x, y].Grayify();
 		}
+		/// <summary>
+		/// Inverts the colors of the image
+		/// </summary>
 		public void Invert()
 		{
 			for(int x = 0; x < this.Height; x++)
 				for(int y = 0; y < this.Width; y++)
 					this.pixels[x, y].Invert();
 		}
+		/// <summary>
+		/// Resizes the image
+		/// </summary>
+		/// <param name="new_height">New height of the image, 0 to keep the same</param>
+		/// <param name="new_width">New width of the image, 0 to keep the same</param>
 		public void Resize(uint new_height, uint new_width)
 		{
 			if(new_height == 0) new_height = (uint)this.Height;
@@ -283,10 +368,19 @@ namespace PbScientInfo
 
 			this.pixels = resized;
 		}
+		/// <summary>
+		/// Scales the image
+		/// </summary>
+		/// <param name="factor">Scale factor, &lt;1 to reduce size</param>
 		public void Scale(double factor)
 		{
 			this.Resize((uint)(this.Height * factor), (uint)(this.Width * factor));
 		}
+		/// <summary>
+		/// Rotates the image by any angle
+		/// </summary>
+		/// <param name="angle">Angle in degres to rotate the image counter clockwise</param>
+		/// <param name="background_pixel">Pixel to put in the backhround, black by default</param>
 		public void Rotate(double angle, BGRPixel background_pixel = null)
 		{
 			angle *= -Math.PI / 180;
@@ -323,6 +417,12 @@ namespace PbScientInfo
 
 			this.pixels = rotated;
 		}
+		/// <summary>
+		/// Applies a convolution matrix to the image
+		/// </summary>
+		/// <param name="matrix">A convolution matrix, should be square and of uneven size</param>
+		/// <param name="ignore_total">If the weights of the matrix should NOT be divided by the total weight</param>
+		/// <param name="edge_mode">Mode for image edge treatment, "kernel_crop" by default (NOT IMPLEMENTED)</param>
 		public void ApplyConvolution(double[,] matrix, bool ignore_total = false, string edge_mode = "kernel_crop")
 		{
 			if(matrix == null || matrix.GetLength(0) != matrix.GetLength(1) || matrix.GetLength(0) % 2 == 0)
@@ -353,14 +453,24 @@ namespace PbScientInfo
 					this.pixels[x, y] = BGRPixel.FuseWeighted(weighted_pixels, ignore_total);
 				}
 		}
+		/// <summary>
+		/// Applies an edge detection matrix to the image
+		/// </summary>
 		public void EdgeDetection()
 		{
 			this.ApplyConvolution(new double[3, 3] { { -1, -1, -1 }, { -1, 8, -1 }, { -1, -1, -1 } }, true);
 		}
+		/// <summary>
+		/// Sharpens the image
+		/// </summary>
 		public void Sharpen()
 		{
 			this.ApplyConvolution(new double[3, 3] { { -1, -1, -1 }, { -1, 9, -1 }, { -1, -1, -1 } }, true);
 		}
+		/// <summary>
+		/// Applies a box blur to the image
+		/// </summary>
+		/// <param name="reach">How far each pixel should fetch to blur</param>
 		public void BoxBlur(uint reach = 1)
 		{
 			double[,] matrix = new double[reach * 2 + 1, reach * 2 + 1];
@@ -371,6 +481,11 @@ namespace PbScientInfo
 
 			this.ApplyConvolution(matrix, false);
 		}
+		/// <summary>
+		/// Applies a gaussian blur to the image
+		/// </summary>
+		/// <param name="reach">How far each pixel should fetch to blur</param>
+		/// <param name="deviation">How the distance to the pixel should affect the blur</param>
 		public void GaussianBlur(uint reach = 2, double deviation = 1)
 		{
 			if(deviation == 0) return;
@@ -383,6 +498,10 @@ namespace PbScientInfo
 
 			this.ApplyConvolution(matrix, false);
 		}
+		/// <summary>
+		/// Embosses the image
+		/// </summary>
+		/// <param name="reach"></param>
 		public void Emboss(uint reach = 1)
 		{
 			double[,] matrix = new double[reach * 2 + 1, reach * 2 + 1];
@@ -394,7 +513,12 @@ namespace PbScientInfo
 			this.ApplyConvolution(matrix, false);
 		}
 
-		public BitMap24Image Histrogram(bool resize = false)
+		/// <summary>
+		/// Returns a histogram of the image
+		/// </summary>
+		/// <param name="resize">Should the histogram's height be egal to its width</param>
+		/// <returns>A histrogram representation of the image</returns>
+		public BitMap24Image Histrogram(bool resize = true)
 		{
 			int[] r_count = new int[256];
 			int[] g_count = new int[256];
@@ -424,6 +548,12 @@ namespace PbScientInfo
 			return histogram;
 		}
 
+		/// <summary>
+		/// Converts a value to its Little Endian equivalent
+		/// </summary>
+		/// <param name="value">The value to convert</param>
+		/// <param name="size">The size of the byte string, leave 0 for minimum</param>
+		/// <returns>A byte string representing the Little Endian equivalent of value</returns>
 		private static byte[] ToEndian(int value, uint size = 0)
 		{
 			if(size < 1) for(size = 1; value >= (int)Math.Pow(256, size); size++) ;
@@ -437,6 +567,11 @@ namespace PbScientInfo
 
 			return bytes;
 		}
+		/// <summary>
+		/// Converts a byte string in Little Endian to its Int32 equivalent
+		/// </summary>
+		/// <param name="bytes">A byte string in Little Endian</param>
+		/// <returns>The Int32 equivalent of the byte string</returns>
 		private static int FromEndian(byte[] bytes)
 		{
 			int output = 0;
@@ -444,6 +579,11 @@ namespace PbScientInfo
 				output += bytes[i] * (int)Math.Pow(256, i);
 			return output;
 		}
+		/// <summary>
+		/// Returns a string representing the byte string of a BitMap image
+		/// </summary>
+		/// <param name="path">Path to a .bmp file</param>
+		/// <returns>A string representing the byte string of a BitMap image</returns>
 		public static string BytesToString(string path)
 		{
 			string output = "";
@@ -462,6 +602,16 @@ namespace PbScientInfo
 			return output;
 		}
 
+		/// <summary>
+		/// Returns a new image representing a Mandelbrot set
+		/// </summary>
+		/// <param name="image_width">Width of the image in pixels</param>
+		/// <param name="hw_ratio">Height/width ratio of the image</param>
+		/// <param name="centerX">Centre of the image's x in the set's referencial</param>
+		/// <param name="centerY">Centre of the image's y in the set's referencial</param>
+		/// <param name="reach">Distance beteween the center and the vertical edges of the image in the set's referencial</param>
+		/// <param name="depth">Iteration depth during generation</param>
+		/// <returns>A new image representing a Mandelbrot set</returns>
 		public static BitMap24Image NewMandelbrot(uint image_width, double hw_ratio = 1, double centerX = 0, double centerY = 0, double reach = 1, uint depth = 250)
 		{
 			BitMap24Image mandelbrot = new BitMap24Image();
@@ -486,6 +636,18 @@ namespace PbScientInfo
 
 			return mandelbrot;
 		}
+		/// <summary>
+		/// Returns a new image representing a Julia set
+		/// </summary>
+		/// <param name="image_width">Width of the image in pixels</param>
+		/// <param name="hw_ratio">Height/width ratio of the image</param>
+		/// <param name="pointX">The point of which the Julia set will be the image 's x</param>
+		/// <param name="pointY">The point of which the Julia set will be the image 's y</param>
+		/// <param name="centerX">Centre of the image's x in the set's referencial</param>
+		/// <param name="centerY">Centre of the image's y in the set's referencial</param>
+		/// <param name="reach">Distance beteween the center and the vertical edges of the image in the set's referencial</param>
+		/// <param name="depth">Iteration depth during generation</param>
+		/// <returns></returns>
 		public static BitMap24Image NewJuliaSet(uint image_width, double hw_ratio = 1, double pointX = 0, double pointY = 0, double centerX = 0, double centerY = 0, double reach = 1.25, uint depth = 250)
 		{
 			BitMap24Image julia = new BitMap24Image();
@@ -510,6 +672,13 @@ namespace PbScientInfo
 
 			return julia;
 		}
+		/// <summary>
+		/// Returns a new image representing a Sierpinski Carpet
+		/// </summary>
+		/// <param name="levels">Number of iteration levels</param>
+		/// <param name="foreground">Color of the carpet, white by default</param>
+		/// <param name="background">Color of the background, black by default</param>
+		/// <returns></returns>
 		public static BitMap24Image NewSierpinskiCarpet(uint levels, BGRPixel foreground = null, BGRPixel background = null)
 		{
 			if(foreground == null) foreground = new BGRPixel(255, 255, 255);
@@ -529,6 +698,15 @@ namespace PbScientInfo
 			return carpet;
 		}
 
+		/// <summary>
+		/// Returns a new image representing a QR Code
+		/// </summary>
+		/// <param name="content">The content of the QR Code</param>
+		/// <param name="correction">Correction amount of the QR Code, should be L, M, Q or H</param>
+		/// <param name="version">Version of the QR Code, should be between 1 and 40,leave 0 for auto</param>
+		/// <param name="encoding">Encoding fo the QR Code, should be "numeric", "alphanumeric", "byte" or "kanji", "" for auto</param>
+		/// <param name="mask">Mask to use on the QR Code, should be between 0 and 7, -1 for auto</param>
+		/// <returns>A new image representing a QR Code</returns>
 		public static BitMap24Image NewQRCode(string content, char correction = 'M', uint version = 0, string encoding = "", int mask = -1)
 		{
 			// # Auto mode
