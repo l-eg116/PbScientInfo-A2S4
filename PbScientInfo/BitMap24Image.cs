@@ -318,6 +318,12 @@ namespace PbScientInfo
 				for(int y = 0; y < this.Width; y++)
 					this.pixels[x, y].Invert();
 		}
+		public void Enzoify()
+		{
+			for(int x = 0; x < this.Height; x++)
+				for(int y = 0; y < this.Width; y++)
+					this.pixels[x, y].Enzoify();
+		}
 		/// <summary>
 		/// Resizes the image
 		/// </summary>

@@ -201,6 +201,12 @@ namespace PbScientInfo
 			this.g = (byte)(255 - this.g);
 			this.b = (byte)(255 - this.b);
 		}
+		public void Enzoify()
+		{
+			this.r = this.r < 128 ? (byte)0 : (byte)255;
+			this.g = this.g < 128 ? (byte)0 : (byte)255;
+			this.b = this.b < 128 ? (byte)0 : (byte)255;
+		}
 		/// <summary>
 		/// Merge a pixel to this instance by evening their Blue, Green and Red values two by two
 		/// </summary>
