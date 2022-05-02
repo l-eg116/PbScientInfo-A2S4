@@ -147,7 +147,7 @@ namespace PbScientInfo
 		}
 
 		/// <summary>
-		/// Create a new 1x1 BitMap24Image
+		/// Creates a new 1x1 BitMap24Image
 		/// </summary>
 		public BitMap24Image()
 		{
@@ -1054,9 +1054,9 @@ namespace PbScientInfo
 			{ { 7089, 4296, 2953, 1817 }, { 5596, 3391, 2331, 1435 }, { 3993, 2420, 1663, 1024 }, { 3057, 1852, 1273, 784 } } };
 
 			uint version = 0;
-			while(qr_capacity_table[version, correction_, encoding_] < data_length && version < 40) version++;
+			while(version < 40 && qr_capacity_table[version, correction_, encoding_] < data_length) version++;
 
-			return version + 1;
+			return version + 1 <= 40 ? version + 1 : 40;
 		}
 		private static void QR_IntToBits(bool[] bits, int integer)
 		{
@@ -1151,7 +1151,7 @@ namespace PbScientInfo
 
 			return bit_string;
 		}
-		private static int[] QR_ErrorCorrectionTable(uint version, char correction)
+		private static int[] QR_ErrorCorrectionTable(uint version, char correction) 
 		{
 			// [v][0] Total Number of Data Codewords for this Version and EC Level
 			// [v][1] EC Codewords Per Block
