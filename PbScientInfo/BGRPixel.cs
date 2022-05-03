@@ -1,4 +1,5 @@
-﻿using System;
+﻿// (c) Emile Gatignon - May 2022 //
+using System;
 using System.Collections.Generic;
 
 namespace PbScientInfo

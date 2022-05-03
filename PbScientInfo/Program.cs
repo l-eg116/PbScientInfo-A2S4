@@ -1,4 +1,5 @@
-﻿using System;
+﻿// (c) Emile Gatignon - May 2022 //
+using System;
 using System.Diagnostics;
 using System.Threading;
 
@@ -261,11 +262,10 @@ namespace PbScientInfo
 							}
 							break;
 						case -1:
-								quit = true;
-								break;
-							}
-
+							quit = true;
+							break;
 					}
+				}
 				catch(Exception ex)
 				{
 					Console.WriteLine($"{ex}\n> Exception caught.\n");

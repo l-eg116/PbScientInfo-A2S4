@@ -1,4 +1,5 @@
-﻿using System;
+﻿// (c) Emile Gatignon - May 2022 //
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -1151,7 +1152,7 @@ namespace PbScientInfo
 
 			return bit_string;
 		}
-		private static int[] QR_ErrorCorrectionTable(uint version, char correction) 
+		private static int[] QR_ErrorCorrectionTable(uint version, char correction)
 		{
 			// [v][0] Total Number of Data Codewords for this Version and EC Level
 			// [v][1] EC Codewords Per Block
