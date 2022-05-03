@@ -4,8 +4,15 @@ using System.Threading;
 
 namespace PbScientInfo
 {
+	/// <summary>
+	/// Main programm
+	/// </summary>
 	class Program
 	{
+		/// <summary>
+		/// Main loop of the program, runs the UI
+		/// </summary>
+		/// <param name="args">empty</param>
 		static void Main(string[] args)
 		{
 			Action<string> Print = Console.WriteLine;
@@ -249,6 +256,12 @@ namespace PbScientInfo
 				}
 			}
 		}
+		/// <summary>
+		/// Returns an String queried from the user
+		/// </summary>
+		/// <param name="question">Phrase above the query line</param>
+		/// <param name="variable_name">Variable query name</param>
+		/// <returns>A String querried to the user</returns>
 		static string InputString(string question = "", string variable_name = "")
 		{
 			if(question != "") Console.WriteLine(question);
@@ -256,6 +269,12 @@ namespace PbScientInfo
 			Console.Write("> ");
 			return Console.ReadLine();
 		}
+		/// <summary>
+		/// Returns an Int32 queried from the user
+		/// </summary>
+		/// <param name="question">Phrase above the query line</param>
+		/// <param name="variable_name">Variable query name</param>
+		/// <returns>An Int32 querried to the user</returns>
 		static int InputInt(string question = "", string variable_name = "")
 		{
 			if(question != "") Console.WriteLine(question);
@@ -268,6 +287,12 @@ namespace PbScientInfo
 				catch(FormatException) { continue; }
 			}
 		}
+		/// <summary>
+		/// Returns an Double queried from the user
+		/// </summary>
+		/// <param name="question">Phrase above the query line</param>
+		/// <param name="variable_name">Variable query name</param>
+		/// <returns>A Double querried to the user</returns>
 		static double InputDouble(string question = "", string variable_name = "")
 		{
 			if(question != "") Console.WriteLine(question);
@@ -280,6 +305,14 @@ namespace PbScientInfo
 				catch(FormatException) { continue; }
 			}
 		}
+		/// <summary>
+		/// Opens up a menu with up to 10 options
+		/// </summary>
+		/// <param name="title">Title of the menu</param>
+		/// <param name="options">String array representing the options, should not exceed 10 in length</param>
+		/// <param name="zero_start">Should the menu start at 0 instead of 1</param>
+		/// <param name="clear">Should the console be cleared before menu display</param>
+		/// <returns>The menu option number querried to the user, -1 if [Esc]</returns>
 		static int Menu(string title, string[] options, bool zero_start = false, bool clear = false)
 		{
 			if(clear) Console.Clear();
