@@ -9,6 +9,12 @@
     <None Update="test_items\coco.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="test_items\doge.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="test_items\hackerman.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="test_items\lac.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

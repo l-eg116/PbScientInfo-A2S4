@@ -40,7 +40,9 @@ namespace PbScientInfo
 					}))
 					{
 						case 1:
-							switch(Menu("Quelle image voulez vous ouvrir ?", new string[] { "Importer...", "coco", "lac", "B&WSquares", "BGRSquares" }, true, true))
+							switch(Menu("Quelle image voulez vous ouvrir ?",
+								new string[] { "Importer...", "coco", "lac", "hackerman", "doge",
+									"B&WSquares", "BGRSquares", "Test1 (bonhomme)", "Test2 (art moderne)", "Test3 (arbre)" }, true, true))
 							{
 								case 0:
 									try
@@ -68,12 +70,32 @@ namespace PbScientInfo
 									loaded = "lac";
 									break;
 								case 3:
+									image = new BitMap24Image(@"test_items\hackerman.bmp");
+									loaded = "hackerman";
+									break;
+								case 4:
+									image = new BitMap24Image(@"test_items\doge.bmp");
+									loaded = "doge";
+									break;
+								case 5:
 									image = new BitMap24Image(@"test_items\B&Wsquares.bmp");
 									loaded = "B&Wsquares";
 									break;
-								case 4:
+								case 6:
 									image = new BitMap24Image(@"test_items\RGBsquares.bmp");
 									loaded = "RGBsquares";
+									break;
+								case 7:
+									image = new BitMap24Image(@"test_items\Test1.bmp");
+									loaded = "Test1";
+									break;
+								case 8:
+									image = new BitMap24Image(@"test_items\Test2.bmp");
+									loaded = "Test2";
+									break;
+								case 9:
+									image = new BitMap24Image(@"test_items\Test3.bmp");
+									loaded = "Test3";
 									break;
 								case -1:
 								default:
